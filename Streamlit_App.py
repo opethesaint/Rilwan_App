@@ -41,6 +41,7 @@ tawk_widget = """
 <div style="
     position: fixed;
     bottom: 20px;
+    right:20px;
     right: 20px;
     z-index: 9999;
 ">
@@ -65,6 +66,9 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 """
 
 components.html(tawk_widget, height=100)
+
+
+
 
 import streamlit as st
 
