@@ -19,21 +19,6 @@ function changeText(){
 </script>
 """, height=0)
 
-
-
-
-
-# Set wide layout before anything else
-st.set_page_config(
-    page_title="Job Data Explorer",
-    layout="wide"
-)
-
-import streamlit as st
-
-import streamlit as st
-
-# Floating style container
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -67,6 +52,21 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 
 components.html(tawk_widget, height=100)
 
+
+
+
+
+# Set wide layout before anything else
+st.set_page_config(
+    page_title="Job Data Explorer",
+    layout="wide"
+)
+
+import streamlit as st
+
+import streamlit as st
+
+# Floating style container
 
 
 
