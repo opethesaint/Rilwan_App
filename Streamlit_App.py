@@ -562,24 +562,33 @@ if st.sidebar.button("🗑 Clear Chat", use_container_width=True):
 
 with st.sidebar:
     st.markdown("💡 *Success is built one query at a time.*")
-
 import streamlit as st
 import streamlit.components.v1 as components
 
-def add_live_chat(widget_id):
-    # This script injects the JS required for a chat bubble
-    chat_script = f"""
+def add_tawk_to_widget():
+    # Replace the URL below with your actual Tawk.to widget URL
+    # It looks like: https://embed.tawk.to/YOUR_ID/DEFAULT
+    tawk_to_script = """
     <script type="text/javascript">
-    window.$crisp=[];window.CRISP_WEBSITE_ID="{widget_id}";
-    (function(){{
-        d=document;s=d.createElement("script");
-        s.src="https://client.crisp.chat/l.js";
-        s.async=1;d.getElementsByTagName("head")[0].appendChild(s);
-    }})();
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/YOUR_PROPERTY_ID/default';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
     </script>
     """
-    components.html(chat_script, height=0, width=0)
+    # This renders the script in the background with 0 dimensions
+    components.html(tawk_to_script, height=0, width=0)
 
+# Call the function at the top or bottom of your app
+add_tawk_to_widget()
+
+st.title("My Streamlit App")
+st.write("The professional live chat widget is active in the bottom right corner.")
 
 
 
