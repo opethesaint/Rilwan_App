@@ -19,38 +19,13 @@ function changeText(){
 </script>
 """, height=0)
 
-import streamlit as st
-import streamlit.components.v1 as components
-
+import streamlit as st import streamlit.components.v1 as components
 tawk_widget = """
-<div style="
-    position: fixed;
-    bottom: 20px;
-    right:50px;
-    right: 20px;
-    z-index: 9999;
-">
-<!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
-
-(function () {
-    var s1 = document.createElement("script");
-    var s0 = document.getElementsByTagName("script")[0];
-
-    s1.async = true;
-    s1.src = 'https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
-    s1.charset = 'UTF-8';
-    s1.setAttribute('crossorigin', '*');
-
-    s0.parentNode.insertBefore(s1, s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
-</div>
-"""
-
-components.html(tawk_widget, height=100)
+<!--Start of Tawk.to Script--> <script type="text/javascript"> var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date(); 
+(function () { var s1 = document.createElement("script"); var s0 = document.getElementsByTagName("script")[0]; s1.async = true; 
+s1.src = 'https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us'; s1.charset = 'UTF-8'; s1.setAttribute('crossorigin', '*');
+s0.parentNode.insertBefore(s1, s0); })(); </script> <!--End of Tawk.to Script--> 
+""" components.html(tawk_widget, height=50)
 
 
 
