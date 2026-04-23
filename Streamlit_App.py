@@ -448,9 +448,9 @@ with st.form("feedback_form"):
     submitted = st.form_submit_button("Send Feedback")
 
 def send_email(name, user_email, message):
-    sender_email = "yourgmail@gmail.com"        # your email
-    sender_password = "your_app_password"      # Gmail App Password
-    receiver_email = "yourgmail@gmail.com"     # where feedback goes
+    sender_email = "hannysestore@gmail.com"        # your email
+    sender_password = "Haneefah29"      # Gmail App Password
+    receiver_email = "hannysestore@gmail.com"     # where feedback goes
 
     subject = f"Website Feedback from {name}"
 
