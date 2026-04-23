@@ -40,8 +40,8 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 """
 
 # Hidden container (important)
-components.html(TAWK_SCRIPT, height=100, width=100, bottom:20px;
-right:20px;)
+components.html(TAWK_SCRIPT, height=100, width=100, bottom:20;
+right:20)
 
 
 import streamlit as st
