@@ -563,35 +563,48 @@ if st.sidebar.button("🗑 Clear Chat", use_container_width=True):
 with st.sidebar:
     st.markdown("💡 *Success is built one query at a time.*")
 
+import streamlit as st
+import streamlit.components.v1 as components
 
+# We use st.markdown with unsafe_allow_html to inject the fixed-position button
+# AND the script execution logic simultaneously.
 st.markdown("""
-    <div style="position: fixed; bottom: 50px; right: 20px;">
-        <a href="https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us" target="_blank" 
-           style="background: #25D366; color: white; padding: 12px 20px; 
-                  border-radius: 50px; text-decoration: none; font-weight: bold;">
+    <style>
+        .floating-chat-trigger {
+            position: fixed;
+            bottom: 50px;
+            right: 20px;
+            z-index: 999999;
+        }
+        .chat-btn {
+            background: #25D366; 
+            color: white !important; 
+            padding: 12px 20px; 
+            border-radius: 50px; 
+            text-decoration: none; 
+            font-weight: bold;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+
+    <div class="floating-chat-trigger">
+        <a href="javascript:void(0);" onclick="Tawk_API.toggle();" class="chat-btn">
             💬 LIVE CHAT
         </a>
     </div>
+
+    <script type="text/javascript">
+        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+        (function(){
+            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+            s1.async=true;
+            s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
+            s1.charset='UTF-8';
+            s1.setAttribute('crossorigin','*');
+            s0.parentNode.insertBefore(s1,s0);
+        })();
+    </script>
 """, unsafe_allow_html=True)
-
-
-
-
-
-import streamlit.components.v1 as components
-
-components.html("""
-<!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
-""", height=100)
