@@ -587,8 +587,5 @@ def add_tawk_to_widget():
 # Call the function at the top or bottom of your app
 add_tawk_to_widget()
 
-st.title("My Streamlit App")
-st.write("The professional live chat widget is active in the bottom right corner.")
-
 
 
