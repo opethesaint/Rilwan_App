@@ -562,31 +562,22 @@ if st.sidebar.button("🗑 Clear Chat", use_container_width=True):
 
 
 
-import streamlit as st
+with st.sidebar:
+    st.info("💬 Live chat is loading externally...")
 
-st.set_page_config(page_title="App", layout="wide")
-
-tawk_script = """
-<!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-document.body.appendChild(s1);
-})();
-</script>
-<!--End of Tawk.to Script-->
-"""
-
-st.markdown(tawk_script, unsafe_allow_html=True)
-
-
-
-
+st.components.v1.html("""
+<a href="https://tawk.to/chat" target="_blank">
+<button style="
+padding:10px;
+background:#ff512f;
+color:white;
+border:none;
+border-radius:10px;
+cursor:pointer;">
+Open Live Chat 💬
+</button>
+</a>
+""", height=80)
 
 with st.sidebar:
     st.markdown("💡 *Success is built one query at a time.*")
