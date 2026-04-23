@@ -8,30 +8,26 @@ import streamlit.components.v1 as components
 df = pd.read_csv("Analysis_Ready_DS_jobs.csv")
 
 
+import streamlit.components.v1 as components
 
-
-# Define the script
 TAWK_SCRIPT = """
-    <script type="text/javascript">
-        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-        (function(){
-            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-            s1.async=true;
-            s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
-            s1.charset='UTF-8';
-            s1.setAttribute('crossorigin','*');
-            s0.parentNode.insertBefore(s1,s0);
-        })();
-    </script>
+<div style="position:fixed; bottom:20px; right:20px; z-index:9999;"></div>
+
+<script type="text/javascript">
+var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+
+(function() {
+    var s1 = document.createElement("script");
+    s1.async = true;
+    s1.src = 'https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
+    s1.charset = 'UTF-8';
+    s1.setAttribute('crossorigin', '*');
+    document.body.appendChild(s1);
+})();
+</script>
 """
 
-# Render the script in a hidden component
-# We use height=0 and width=0 to ensure it doesn't move your layout
-components.html(TAWK_SCRIPT, height=100)
-
-# The rest of your app code goes here
-st.title("My Streamlit App")
-st.write("The chat widget should appear in the bottom right corner.")
+components.html(TAWK_SCRIPT, height=100, width=0)
 
 
 
