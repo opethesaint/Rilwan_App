@@ -569,7 +569,7 @@ st.markdown("""
         <a href="https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us" target="_blank" 
            style="background: #25D366; color: white; padding: 12px 20px; 
                   border-radius: 50px; text-decoration: none; font-weight: bold;">
-            💬 WhatsApp Chat
+            💬 LIVE CHAT
         </a>
     </div>
 """, unsafe_allow_html=True)
