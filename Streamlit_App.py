@@ -559,8 +559,6 @@ if st.sidebar.button("🗑 Clear Chat", use_container_width=True):
 
 
 
-
-
 import streamlit as st
 
 chat_widget = """
@@ -573,13 +571,13 @@ s1.async=true;
 s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
 s1.charset='UTF-8';
 s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
+document.body.appendChild(s1);  // force attach to body
 })();
 </script>
 <!--End of Tawk.to Script-->
 """
 
-# Embed without affecting charts
+# Height=0 so Streamlit doesn’t reserve space
 st.components.v1.html(chat_widget, height=0, scrolling=False)
 
 
