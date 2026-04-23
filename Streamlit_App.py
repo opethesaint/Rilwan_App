@@ -429,7 +429,59 @@ if st.session_state.get("chart20", False):
 
 
 
+#####
+import streamlit as st
+import smtplib
+from email.mime.text import MIMEText
 
+# ===============================
+# FEEDBACK SECTION (BOTTOM PAGE)
+# ===============================
+st.markdown("---")
+st.header("📩 Send Feedback")
+
+with st.form("feedback_form"):
+    name = st.text_input("Your Name")
+    user_email = st.text_input("Your Email")
+    message = st.text_area("Your Feedback", height=150)
+
+    submitted = st.form_submit_button("Send Feedback")
+
+def send_email(name, user_email, message):
+    sender_email = "yourgmail@gmail.com"        # your email
+    sender_password = "your_app_password"      # Gmail App Password
+    receiver_email = "yourgmail@gmail.com"     # where feedback goes
+
+    subject = f"Website Feedback from {name}"
+
+    body = f"""
+Name: {name}
+Email: {user_email}
+
+Message:
+{message}
+"""
+
+    msg = MIMEText(body)
+    msg["Subject"] = subject
+    msg["From"] = sender_email
+    msg["To"] = receiver_email
+
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.starttls()
+    server.login(sender_email, sender_password)
+    server.sendmail(sender_email, receiver_email, msg.as_string())
+    server.quit()
+
+if submitted:
+    if name and user_email and message:
+        try:
+            send_email(name, user_email, message)
+            st.success("✅ Feedback sent successfully!")
+        except Exception as e:
+            st.error("❌ Failed to send feedback")
+    else:
+        st.warning("⚠️ Please fill all fields.")
 
 
 
@@ -520,55 +572,6 @@ st.markdown("""
 
 with st.sidebar:
     st.info("🌤️ Lagos: 28°C")
-
-import streamlit as st
-import smtplib
-from email.mime.text import MIMEText
-
-# ---------------- SIDEBAR FEEDBACK ----------------
-st.sidebar.markdown("---")
-st.sidebar.subheader("📩 Send Feedback")
-
-name = st.sidebar.text_input("Your Name")
-user_email = st.sidebar.text_input("Your Email")
-message = st.sidebar.text_area("Your Feedback")
-
-def send_email(name, user_email, message):
-    sender_email = "yourgmail@gmail.com"         # your email
-    sender_password = "your_app_password"        # Gmail App Password
-    receiver_email = "yourgmail@gmail.com"       # where feedback goes
-
-    subject = f"New Feedback from {name}"
-
-    body = f"""
-Name: {name}
-Email: {user_email}
-
-Message:
-{message}
-"""
-
-    msg = MIMEText(body)
-    msg["Subject"] = subject
-    msg["From"] = sender_email
-    msg["To"] = receiver_email
-
-    server = smtplib.SMTP("smtp.gmail.com", 587)
-    server.starttls()
-    server.login(sender_email, sender_password)
-    server.sendmail(sender_email, receiver_email, msg.as_string())
-    server.quit()
-
-if st.sidebar.button("Send Feedback"):
-    if name and user_email and message:
-        try:
-            send_email(name, user_email, message)
-            st.sidebar.success("✅ Feedback sent successfully!")
-        except Exception as e:
-            st.sidebar.error("❌ Failed to send feedback")
-    else:
-        st.sidebar.warning("⚠️ Fill all fields first")
-
 
 
 
