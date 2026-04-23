@@ -64,7 +64,7 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 </div>
 """
 
-components.html(tawk_widget, height=0)
+components.html(tawk_widget, height=100)
 
 import streamlit as st
 
