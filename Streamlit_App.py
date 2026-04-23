@@ -37,8 +37,9 @@ import streamlit as st
 import streamlit as st
 import streamlit.components.v1 as components
 
+st.set_page_config(layout="wide")
+
 tawk_widget = """
-<!--Start of Tawk.to Script-->
 <script type="text/javascript">
 var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 
@@ -54,10 +55,11 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
     s0.parentNode.insertBefore(s1, s0);
 })();
 </script>
-<!--End of Tawk.to Script-->
 """
 
-components.html(tawk_widget, height=0)
+components.html(tawk_widget, height=700, scrolling=True)
+
+
 
 import streamlit as st
 
