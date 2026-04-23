@@ -560,21 +560,13 @@ if st.sidebar.button("🗑 Clear Chat", use_container_width=True):
 
 
 
-with st.sidebar:
-    st.markdown("💡 *Success is built one query at a time.*")
-
-
-
-
-
 
 
 import streamlit as st
-import streamlit.components.v1 as components
 
-st.set_page_config(page_title="My App", layout="wide")
+st.set_page_config(page_title="App", layout="wide")
 
-TAWK_SCRIPT = """
+tawk_script = """
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
@@ -584,15 +576,25 @@ s1.async=true;
 s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
 s1.charset='UTF-8';
 s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
+document.body.appendChild(s1);
 })();
 </script>
 <!--End of Tawk.to Script-->
 """
 
-# 👇 THIS IS THE IMPORTANT LINE YOU ASKED FOR
-components.html(TAWK_SCRIPT, height=0)
+st.markdown(tawk_script, unsafe_allow_html=True)
 
-# Your normal app content
-st.title("Welcome to My Streamlit App")
+
+
+
+
+with st.sidebar:
+    st.markdown("💡 *Success is built one query at a time.*")
+
+
+
+
+
+
+e to My Streamlit App")
 st.write("Live chat is enabled at the bottom-right corner.")
