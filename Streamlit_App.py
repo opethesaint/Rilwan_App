@@ -29,9 +29,8 @@ st.set_page_config(
     layout="wide"
 )
 
-import streamlit as st
 
-chat_widget = """
+st.markdown("""
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
@@ -45,10 +44,7 @@ s0.parentNode.insertBefore(s1,s0);
 })();
 </script>
 <!--End of Tawk.to Script-->
-"""
-
-# Embed the widget in Streamlit
-st.components.v1.html(chat_widget, height=200)
+""", unsafe_allow_html=True)
 
 
 
