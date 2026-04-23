@@ -564,7 +564,15 @@ with st.sidebar:
     st.markdown("💡 *Success is built one query at a time.*")
 
 
-
+st.markdown("""
+    <div style="position: fixed; bottom: 50px; right: 20px;">
+        <a href="https://wa.me/message/J37UJJHFVN2WO1" target="_blank" 
+           style="background: #25D366; color: white; padding: 12px 20px; 
+                  border-radius: 50px; text-decoration: none; font-weight: bold;">
+            💬 WhatsApp Chat
+        </a>
+    </div>
+""", unsafe_allow_html=True)
 
 
 
