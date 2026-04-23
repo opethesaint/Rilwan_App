@@ -27,7 +27,7 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 </script>
 """
 
-components.html(TAWK_SCRIPT, height=100, width=0)
+components.html(TAWK_SCRIPT, height=100)
 
 
 
