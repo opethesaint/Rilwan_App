@@ -33,6 +33,14 @@ import streamlit as st
 
 import streamlit as st
 
+# Floating style container
+st.markdown("""
+    <div style="position: fixed; bottom: 50px; right: 20px; z-index: 1000;">
+        <!-- You can place buttons, links, or icons here -->
+    </div>
+""", unsafe_allow_html=True)
+
+# Tawk.to chat widget
 chat_widget = """
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
@@ -51,7 +59,6 @@ s0.parentNode.insertBefore(s1,s0);
 
 # Embed the widget in Streamlit
 st.components.v1.html(chat_widget, height=600)
-
 
 
 
