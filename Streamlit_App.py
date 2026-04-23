@@ -219,6 +219,214 @@ if st.session_state.get("chart2", False):
     st.pyplot(fig)
 
 
+# Continue from your current code and add CHART 3 to CHART 20 below
+
+# ---------------- CHART 3 ----------------
+st.subheader("3. Which Job Categories Pay the Most?")
+if st.button("Show Chart 3"):
+    toggle_chart("chart3")
+
+if st.session_state.get("chart3", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    top = filtered_df.groupby("Job Category")["Avg Salary (K)"].mean().sort_values(ascending=False).head(10)
+    sns.barplot(x=top.values, y=top.index, ax=ax)
+    ax.set_title("Highest Paying Job Categories")
+    st.pyplot(fig)
+
+# ---------------- CHART 4 ----------------
+st.subheader("4. Does Seniority Affect Salary?")
+if st.button("Show Chart 4"):
+    toggle_chart("chart4")
+
+if st.session_state.get("chart4", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    sns.boxplot(data=filtered_df, x="Job Seniority", y="Avg Salary (K)", ax=ax)
+    plt.xticks(rotation=45)
+    ax.set_title("Salary by Seniority")
+    st.pyplot(fig)
+
+# ---------------- CHART 5 ----------------
+st.subheader("5. Remote vs Non-Remote Salary Comparison")
+if st.button("Show Chart 5"):
+    toggle_chart("chart5")
+
+if st.session_state.get("chart5", False):
+    fig, ax = plt.subplots(figsize=(8,5))
+    sns.boxplot(data=filtered_df, x="Is Remote", y="Avg Salary (K)", ax=ax)
+    ax.set_title("Remote vs Non-Remote Salary")
+    st.pyplot(fig)
+
+# ---------------- CHART 6 ----------------
+st.subheader("6. Top Hiring Cities")
+if st.button("Show Chart 6"):
+    toggle_chart("chart6")
+
+if st.session_state.get("chart6", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    top = filtered_df["Location City"].value_counts().head(10)
+    sns.barplot(x=top.values, y=top.index, ax=ax)
+    ax.set_title("Top Hiring Cities")
+    st.pyplot(fig)
+
+# ---------------- CHART 7 ----------------
+st.subheader("7. Does Company Rating Relate to Salary?")
+if st.button("Show Chart 7"):
+    toggle_chart("chart7")
+
+if st.session_state.get("chart7", False):
+    fig, ax = plt.subplots(figsize=(8,5))
+    sns.scatterplot(data=filtered_df, x="Rating", y="Avg Salary (K)", ax=ax)
+    ax.set_title("Rating vs Salary")
+    st.pyplot(fig)
+
+# ---------------- CHART 8 ----------------
+st.subheader("8. Company Size Distribution")
+if st.button("Show Chart 8"):
+    toggle_chart("chart8")
+
+if st.session_state.get("chart8", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    filtered_df["Size"].value_counts().plot(kind="bar", ax=ax)
+    ax.set_title("Company Size Distribution")
+    st.pyplot(fig)
+
+# ---------------- CHART 9 ----------------
+st.subheader("9. Industries With Most Job Openings")
+if st.button("Show Chart 9"):
+    toggle_chart("chart9")
+
+if st.session_state.get("chart9", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    top = filtered_df["Industry"].value_counts().head(10)
+    sns.barplot(x=top.values, y=top.index, ax=ax)
+    ax.set_title("Top Industries Hiring")
+    st.pyplot(fig)
+
+# ---------------- CHART 10 ----------------
+st.subheader("10. Sector vs Average Salary")
+if st.button("Show Chart 10"):
+    toggle_chart("chart10")
+
+if st.session_state.get("chart10", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    top = filtered_df.groupby("Sector")["Avg Salary (K)"].mean().sort_values(ascending=False).head(10)
+    sns.barplot(x=top.values, y=top.index, ax=ax)
+    ax.set_title("Average Salary by Sector")
+    st.pyplot(fig)
+
+# ---------------- CHART 11 ----------------
+st.subheader("11. Revenue Band Distribution")
+if st.button("Show Chart 11"):
+    toggle_chart("chart11")
+
+if st.session_state.get("chart11", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    filtered_df["Revenue Band"].value_counts().plot(kind="bar", ax=ax)
+    ax.set_title("Revenue Band Distribution")
+    st.pyplot(fig)
+
+# ---------------- CHART 12 ----------------
+st.subheader("12. Older Companies Pay More?")
+if st.button("Show Chart 12"):
+    toggle_chart("chart12")
+
+if st.session_state.get("chart12", False):
+    fig, ax = plt.subplots(figsize=(8,5))
+    sns.scatterplot(data=filtered_df, x="Company Age", y="Avg Salary (K)", ax=ax)
+    ax.set_title("Company Age vs Salary")
+    st.pyplot(fig)
+
+# ---------------- CHART 13 ----------------
+st.subheader("13. Founded Year Distribution")
+if st.button("Show Chart 13"):
+    toggle_chart("chart13")
+
+if st.session_state.get("chart13", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    sns.histplot(filtered_df["Founded"].dropna(), bins=20, ax=ax)
+    ax.set_title("Founded Year Distribution")
+    st.pyplot(fig)
+
+# ---------------- CHART 14 ----------------
+st.subheader("14. Ownership Type Distribution")
+if st.button("Show Chart 14"):
+    toggle_chart("chart14")
+
+if st.session_state.get("chart14", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    filtered_df["Type of ownership"].value_counts().head(10).plot(kind="bar", ax=ax)
+    ax.set_title("Ownership Types")
+    st.pyplot(fig)
+
+# ---------------- CHART 15 ----------------
+st.subheader("15. Min Salary vs Max Salary")
+if st.button("Show Chart 15"):
+    toggle_chart("chart15")
+
+if st.session_state.get("chart15", False):
+    fig, ax = plt.subplots(figsize=(8,5))
+    sns.scatterplot(data=filtered_df, x="Min Salary (K)", y="Max Salary (K)", ax=ax)
+    ax.set_title("Min vs Max Salary")
+    st.pyplot(fig)
+
+# ---------------- CHART 16 ----------------
+st.subheader("16. Salary Distribution")
+if st.button("Show Chart 16"):
+    toggle_chart("chart16")
+
+if st.session_state.get("chart16", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    sns.histplot(filtered_df["Avg Salary (K)"], bins=30, kde=True, ax=ax)
+    ax.set_title("Salary Distribution")
+    st.pyplot(fig)
+
+# ---------------- CHART 17 ----------------
+st.subheader("17. Top Rated Companies")
+if st.button("Show Chart 17"):
+    toggle_chart("chart17")
+
+if st.session_state.get("chart17", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    top = filtered_df.groupby("Company Name")["Rating"].mean().sort_values(ascending=False).head(10)
+    sns.barplot(x=top.values, y=top.index, ax=ax)
+    ax.set_title("Top Rated Companies")
+    st.pyplot(fig)
+
+# ---------------- CHART 18 ----------------
+st.subheader("18. Competitor Count by Industry")
+if st.button("Show Chart 18"):
+    toggle_chart("chart18")
+
+if st.session_state.get("chart18", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    top = filtered_df.groupby("Industry")["Competitor Count"].mean().sort_values(ascending=False).head(10)
+    sns.barplot(x=top.values, y=top.index, ax=ax)
+    ax.set_title("Competitor Count by Industry")
+    st.pyplot(fig)
+
+# ---------------- CHART 19 ----------------
+st.subheader("19. Jobs Available by Seniority")
+if st.button("Show Chart 19"):
+    toggle_chart("chart19")
+
+if st.session_state.get("chart19", False):
+    fig, ax = plt.subplots(figsize=(10,5))
+    filtered_df["Job Seniority"].value_counts().plot(kind="bar", ax=ax)
+    ax.set_title("Jobs by Seniority")
+    st.pyplot(fig)
+
+# ---------------- CHART 20 ----------------
+st.subheader("20. Correlation Between Numeric Variables")
+if st.button("Show Chart 20"):
+    toggle_chart("chart20")
+
+if st.session_state.get("chart20", False):
+    fig, ax = plt.subplots(figsize=(12,8))
+    num = filtered_df.select_dtypes(include="number")
+    sns.heatmap(num.corr(), annot=True, cmap="coolwarm", ax=ax)
+    ax.set_title("Correlation Heatmap")
+    st.pyplot(fig)
+
 
 
 
