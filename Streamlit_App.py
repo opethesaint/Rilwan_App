@@ -120,7 +120,6 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="Job Research Dashboard", layout="wide")
 
 # ---------------- LOAD DATA ----------------
-df = pd.read_csv("your_file.csv")   # change file name
 
 # ---------------- STYLE ----------------
 st.markdown("""
