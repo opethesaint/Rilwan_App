@@ -566,7 +566,7 @@ with st.sidebar:
 
 st.markdown("""
     <div style="position: fixed; bottom: 50px; right: 20px;">
-        <a href="https://wa.me/message/J37UJJHFVN2WO1" target="_blank" 
+        <a href="https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us" target="_blank" 
            style="background: #25D366; color: white; padding: 12px 20px; 
                   border-radius: 50px; text-decoration: none; font-weight: bold;">
             💬 WhatsApp Chat
