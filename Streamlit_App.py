@@ -21,7 +21,7 @@ df = pd.read_csv("Analysis_Ready_DS_jobs.csv")
 
 
 import streamlit as st
-
+import streamlit.components.v1 as components
 chat_widget = """
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
