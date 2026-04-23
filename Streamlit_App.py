@@ -16,11 +16,7 @@ import streamlit.components.v1 as components
 st.set_page_config(layout="wide")
 
 # ---------------- YOUR APP CONTENT ----------------
-st.title("🐉 Dragon Dashboard")
-st.write("Your charts, background, visuals go here...")
 
-# Example chart
-st.line_chart([3, 5, 2, 8, 6])
 
 # ---------------- TAWK CHAT WIDGET ----------------
 TAWK_SCRIPT = """
