@@ -434,13 +434,12 @@ import streamlit as st
 import smtplib
 from email.mime.text import MIMEText
 
-# ===============================
-# FEEDBACK SECTION
-# ===============================
 st.markdown("---")
 st.header("📩 Send Feedback")
 
-# Initialize session state (IMPORTANT)
+# =========================
+# SESSION STATE INIT
+# =========================
 if "name" not in st.session_state:
     st.session_state.name = ""
 if "email" not in st.session_state:
@@ -448,13 +447,19 @@ if "email" not in st.session_state:
 if "message" not in st.session_state:
     st.session_state.message = ""
 
-with st.form("feedback_form"):
-    name = st.text_input("Your Name", value=st.session_state.name)
-    email = st.text_input("Your Email", value=st.session_state.email)
-    message = st.text_area("Your Message", value=st.session_state.message)
+# =========================
+# FORM
+# =========================
+with st.form("feedback_form", clear_on_submit=True):
+    name = st.text_input("Your Name", key="name")
+    email = st.text_input("Your Email", key="email")
+    message = st.text_area("Your Message", key="message")
 
     submit = st.form_submit_button("Send Feedback")
 
+# =========================
+# SEND EMAIL
+# =========================
 if submit:
     if name and email and message:
         try:
@@ -486,18 +491,14 @@ Message:
 
             st.success("✅ Feedback sent successfully!")
 
-            # 🔥 CLEAR FIELDS AFTER SUCCESS
-            st.session_state.name = ""
-            st.session_state.email = ""
-            st.session_state.message = ""
-
-            st.rerun()
-
         except Exception as e:
             st.error(f"❌ Failed to send feedback: {e}")
 
     else:
-        st.warning("⚠️ Please fill all fields before submitting.")
+        st.warning("⚠️ Please fill all fields.")
+
+
+
 
 
 
@@ -581,6 +582,8 @@ st.markdown("""
 
 </style>
 """, unsafe_allow_html=True)
+
+
 
 
 
