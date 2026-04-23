@@ -15,7 +15,6 @@ function changeText(){
 </script>
 """, height=0)
 
-
 # Assume df is your DataFrame
 df = pd.read_csv("Analysis_Ready_DS_jobs.csv")
 
