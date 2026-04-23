@@ -455,7 +455,7 @@ if submit:
             receiver_email = "hannystore@gmail.com"
 
             # IMPORTANT: use Gmail App Password (NOT your normal password)
-            app_password = "YOUR_APP_PASSWORD_HERE"
+            app_password = "dstn vcbd mjqr bxbo"
 
             # Create email content
             subject = f"New Feedback from {name}"
