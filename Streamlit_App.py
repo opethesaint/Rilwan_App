@@ -30,7 +30,169 @@ st.set_page_config(
 )
 
 
+import streamlit as st
 
+st.set_page_config(page_title="Dragon Background", layout="wide")
+
+# ------------------ DRAGON ANIMATED BACKGROUND ------------------
+st.markdown("""
+<style>
+
+/* Remove default padding */
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* Full page background */
+.stApp {
+    background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #ff512f);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    overflow: hidden;
+}
+
+/* Animated Gradient */
+@keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
+
+/* Dragon Container */
+.dragon {
+    position: fixed;
+    top: 10%;
+    left: -300px;
+    width: 250px;
+    height: 250px;
+    z-index: 1;
+    animation: flyDragon 18s linear infinite;
+    opacity: 0.85;
+}
+
+/* Dragon Flying Motion */
+@keyframes flyDragon {
+    0% {
+        left: -300px;
+        top: 15%;
+        transform: scale(0.8) rotate(0deg);
+    }
+    25% {
+        top: 8%;
+        transform: scale(1) rotate(3deg);
+    }
+    50% {
+        top: 18%;
+        transform: scale(1.1) rotate(-2deg);
+    }
+    75% {
+        top: 10%;
+        transform: scale(0.95) rotate(2deg);
+    }
+    100% {
+        left: 110%;
+        top: 15%;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Fire effect */
+.fire {
+    position: fixed;
+    top: 22%;
+    left: 150px;
+    width: 80px;
+    height: 20px;
+    background: radial-gradient(circle, #ffcc00, #ff6600, transparent);
+    border-radius: 50%;
+    filter: blur(8px);
+    animation: fireBlast 0.4s infinite alternate;
+    z-index: 1;
+}
+
+@keyframes fireBlast {
+    from {
+        transform: scaleX(1);
+        opacity: 0.7;
+    }
+    to {
+        transform: scaleX(1.6);
+        opacity: 1;
+    }
+}
+
+/* Floating glowing particles */
+.particle {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 50%;
+    animation: floatParticle 10s linear infinite;
+}
+
+@keyframes floatParticle {
+    from {
+        transform: translateY(100vh) scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(-10vh) scale(1.5);
+        opacity: 1;
+    }
+}
+
+/* Beautiful glass card */
+.glass {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    color: white;
+    text-align: center;
+    margin-top: 50px;
+}
+
+h1 {
+    color: #fff;
+    text-shadow: 0 0 20px #ff6600;
+}
+
+</style>
+
+<!-- Dragon SVG -->
+<div class="dragon">
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill="#ff3c00" d="M100 250 Q180 100 300 180 Q420 260 320 360 Q250 420 150 350 Z"/>
+<circle cx="300" cy="220" r="10" fill="yellow"/>
+<path fill="#8b0000" d="M180 180 L140 100 L220 160 Z"/>
+<path fill="#8b0000" d="M250 170 L300 80 L330 180 Z"/>
+</svg>
+</div>
+
+<div class="fire"></div>
+
+<!-- Particles -->
+<div class="particle" style="left:10%; animation-delay:0s;"></div>
+<div class="particle" style="left:20%; animation-delay:2s;"></div>
+<div class="particle" style="left:35%; animation-delay:4s;"></div>
+<div class="particle" style="left:50%; animation-delay:1s;"></div>
+<div class="particle" style="left:70%; animation-delay:3s;"></div>
+<div class="particle" style="left:85%; animation-delay:5s;"></div>
+
+""", unsafe_allow_html=True)
+
+# ------------------ CONTENT ------------------
+st.markdown("""
+<div class="glass">
+    <h1>🐉 DASHBOARD</h1>
+    <p>Streamlit app.</p>
+</div>
+""", unsafe_allow_html=True)
 
 
 
