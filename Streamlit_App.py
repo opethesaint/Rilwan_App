@@ -45,10 +45,8 @@ components.html(TAWK_SCRIPT, height=100)
 
 <script>
 function changeText(){
-    document.getElementById("text").innerHTML = "🔥 JavaScript is working!";
-}
-</script>
-""", height=0)
+    document.getElementById("text").innerHTML = "🔥 JavaScript is working!";}
+</script>  """, height=0)
 
 
 
