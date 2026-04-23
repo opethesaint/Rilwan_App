@@ -455,7 +455,7 @@ if submit:
             receiver_email = "hannystore@gmail.com"
 
             # IMPORTANT: use Gmail App Password (NOT your normal password)
-            app_password = "dstn vcbd mjqr bxbo"
+            app_password = "dstnvcbdmjqrbxbo"
 
             # Create email content
             subject = f"New Feedback from {name}"
@@ -488,6 +488,9 @@ Message:
 
     else:
         st.warning("⚠️ Please fill all fields before submitting.")
+
+
+
 
 
 import streamlit as st
