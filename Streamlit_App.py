@@ -435,56 +435,59 @@ import smtplib
 from email.mime.text import MIMEText
 
 # ===============================
-# FEEDBACK SECTION (BOTTOM PAGE)
+# FEEDBACK SECTION
 # ===============================
 st.markdown("---")
 st.header("📩 Send Feedback")
 
 with st.form("feedback_form"):
     name = st.text_input("Your Name")
-    user_email = st.text_input("Your Email")
-    message = st.text_area("Your Feedback", height=150)
+    email = st.text_input("Your Email")
+    message = st.text_area("Your Message")
 
-    submitted = st.form_submit_button("Send Feedback")
+    submit = st.form_submit_button("Send Feedback")
 
-def send_email(name, user_email, message):
-    sender_email = "hannysestore@gmail.com"        # your email
-    sender_password = "Haneefah29"      # Gmail App Password
-    receiver_email = "hannysestore@gmail.com"     # where feedback goes
+if submit:
+    if name and email and message:
+        try:
+            # YOUR EMAIL DETAILS
+            sender_email = "hannystore@gmail.com"
+            receiver_email = "hannystore@gmail.com"
 
-    subject = f"Website Feedback from {name}"
+            # IMPORTANT: use Gmail App Password (NOT your normal password)
+            app_password = "YOUR_APP_PASSWORD_HERE"
 
-    body = f"""
+            # Create email content
+            subject = f"New Feedback from {name}"
+            body = f"""
+You have received new feedback:
+
 Name: {name}
-Email: {user_email}
+Email: {email}
 
 Message:
 {message}
 """
 
-    msg = MIMEText(body)
-    msg["Subject"] = subject
-    msg["From"] = sender_email
-    msg["To"] = receiver_email
+            msg = MIMEText(body)
+            msg["Subject"] = subject
+            msg["From"] = sender_email
+            msg["To"] = receiver_email
 
-    server = smtplib.SMTP("smtp.gmail.com", 587)
-    server.starttls()
-    server.login(sender_email, sender_password)
-    server.sendmail(sender_email, receiver_email, msg.as_string())
-    server.quit()
+            # Send email via Gmail SMTP
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login(sender_email, app_password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+            server.quit()
 
-if submitted:
-    if name and user_email and message:
-        try:
-            send_email(name, user_email, message)
             st.success("✅ Feedback sent successfully!")
+
         except Exception as e:
-            st.error("❌ Failed to send feedback")
+            st.error(f"❌ Failed to send feedback: {e}")
+
     else:
-        st.warning("⚠️ Please fill all fields.")
-
-
-
+        st.warning("⚠️ Please fill all fields before submitting.")
 
 
 import streamlit as st
