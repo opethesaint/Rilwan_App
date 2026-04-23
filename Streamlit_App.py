@@ -594,7 +594,3 @@ with st.sidebar:
 
 
 
-
-
-e to My Streamlit App")
-st.write("Live chat is enabled at the bottom-right corner.")
