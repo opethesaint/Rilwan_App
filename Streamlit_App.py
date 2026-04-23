@@ -13,8 +13,8 @@ TAWK_SCRIPT = """
 <style>
 #tawk-position {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 200px;
+    right: 200px;
     z-index: 9999;
 }
 </style>
