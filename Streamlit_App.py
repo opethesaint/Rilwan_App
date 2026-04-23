@@ -8,7 +8,7 @@ import streamlit.components.v1 as components
 df = pd.read_csv("Analysis_Ready_DS_jobs.csv")
 
 
-mport streamlit as st
+import streamlit as st
 
 chat_widget = """
 <div style="position:fixed; bottom:20px; right:200px; z-index:1000;">
