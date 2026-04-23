@@ -440,24 +440,28 @@ from email.mime.text import MIMEText
 st.markdown("---")
 st.header("📩 Send Feedback")
 
+# Initialize session state (IMPORTANT)
+if "name" not in st.session_state:
+    st.session_state.name = ""
+if "email" not in st.session_state:
+    st.session_state.email = ""
+if "message" not in st.session_state:
+    st.session_state.message = ""
+
 with st.form("feedback_form"):
-    name = st.text_input("Your Name")
-    email = st.text_input("Your Email")
-    message = st.text_area("Your Message")
+    name = st.text_input("Your Name", value=st.session_state.name)
+    email = st.text_input("Your Email", value=st.session_state.email)
+    message = st.text_area("Your Message", value=st.session_state.message)
 
     submit = st.form_submit_button("Send Feedback")
 
 if submit:
     if name and email and message:
         try:
-            # YOUR EMAIL DETAILS
             sender_email = "opethesaint@gmail.com"
             receiver_email = "opethesaint@gmail.com"
-
-            # IMPORTANT: use Gmail App Password (NOT your normal password)
             app_password = "lofevlbskhzcvfde"
 
-            # Create email content
             subject = f"New Feedback from {name}"
             body = f"""
 You have received new feedback:
@@ -474,7 +478,6 @@ Message:
             msg["From"] = sender_email
             msg["To"] = receiver_email
 
-            # Send email via Gmail SMTP
             server = smtplib.SMTP("smtp.gmail.com", 587)
             server.starttls()
             server.login(sender_email, app_password)
@@ -483,13 +486,18 @@ Message:
 
             st.success("✅ Feedback sent successfully!")
 
+            # 🔥 CLEAR FIELDS AFTER SUCCESS
+            st.session_state.name = ""
+            st.session_state.email = ""
+            st.session_state.message = ""
+
+            st.rerun()
+
         except Exception as e:
             st.error(f"❌ Failed to send feedback: {e}")
 
     else:
         st.warning("⚠️ Please fill all fields before submitting.")
-
-
 
 
 
