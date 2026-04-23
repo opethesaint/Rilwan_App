@@ -9,6 +9,21 @@ df = pd.read_csv("Analysis_Ready_DS_jobs.csv")
 import streamlit as st
 import streamlit.components.v1 as components
 
+
+
+import streamlit as st
+components.html("""
+<div style="text-align:center;">
+
+<script>
+function changeText(){
+    document.getElementById("text").innerHTML = "🔥 JavaScript is working!";
+}
+</script>
+""", height=0)
+
+
+
 # ---------------- PAGE CONFIG ----------------
 import streamlit as st
 
@@ -29,22 +44,13 @@ s0.parentNode.insertBefore(s1,s0);
 """
 
 # Embed the widget in Streamlit
-st.components.v1.html(chat_widget, height=600)
+st.components.v1.html(chat_widget, height=200)
 
 
 
 
 
-import streamlit as st
-components.html("""
-<div style="text-align:center;">
 
-<script>
-function changeText(){
-    document.getElementById("text").innerHTML = "🔥 JavaScript is working!";
-}
-</script>
-""", height=0)
 
 
 
