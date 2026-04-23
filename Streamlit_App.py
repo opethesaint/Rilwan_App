@@ -40,7 +40,7 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 """
 
 # Hidden container (important)
-components.html(TAWK_SCRIPT, height=0, width=0)
+components.html(TAWK_SCRIPT, height=200, width=0)
 
 
 
