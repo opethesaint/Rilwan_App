@@ -24,7 +24,7 @@ import streamlit as st
 import streamlit as st
 
 chat_widget = """
-<div style="position:fixed; bottom:20px; right:20px; z-index:1000;">
+<div style="position:fixed; bottom:20px; right:200px; z-index:1000;">
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
   var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
