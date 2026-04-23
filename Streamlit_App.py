@@ -8,20 +8,7 @@ import streamlit.components.v1 as components
 df = pd.read_csv("Analysis_Ready_DS_jobs.csv")
 
 
-import streamlit as st
-components.html("""
-<div style="text-align:center;">
-
-<script>
-function changeText(){
-    document.getElementById("text").innerHTML = "🔥 JavaScript is working!";
-}
-</script>
-""", height=0)
-
-import streamlit as st
-
-import streamlit as st
+mport streamlit as st
 
 chat_widget = """
 <div style="position:fixed; bottom:20px; right:200px; z-index:1000;">
@@ -43,6 +30,19 @@ chat_widget = """
 
 # Embed the widget in Streamlit
 st.components.v1.html(chat_widget, height=200)
+
+
+
+import streamlit as st
+components.html("""
+<div style="text-align:center;">
+
+<script>
+function changeText(){
+    document.getElementById("text").innerHTML = "🔥 JavaScript is working!";
+}
+</script>
+""", height=0)
 
 
 
