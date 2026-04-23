@@ -40,19 +40,9 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 </script>
 """
 
-components.html(TAWK_SCRIPT, height=50, width=50)
+components.html(TAWK_SCRIPT, height=100, width=0)
 
 
-import streamlit as st
-components.html("""
-<div style="text-align:center;">
-
-<script>
-function changeText(){
-    document.getElementById("text").innerHTML = "🔥 JavaScript is working!";
-}
-</script>
-""", height=0)
 
 
 
