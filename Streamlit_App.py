@@ -27,7 +27,7 @@ TAWK_SCRIPT = """
 
 # Render the script in a hidden component
 # We use height=0 and width=0 to ensure it doesn't move your layout
-components.html(TAWK_SCRIPT, height=100, width=20)
+components.html(TAWK_SCRIPT, height=100, width=200)
 
 # The rest of your app code goes here
 st.title("My Streamlit App")
