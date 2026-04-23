@@ -433,13 +433,11 @@ if st.session_state.get("chart20", False):
 import streamlit as st
 import smtplib
 from email.mime.text import MIMEText
+import time
 
 st.markdown("---")
 st.header("📩 Send Feedback")
 
-# =========================
-# SESSION STATE INIT
-# =========================
 if "name" not in st.session_state:
     st.session_state.name = ""
 if "email" not in st.session_state:
@@ -447,9 +445,6 @@ if "email" not in st.session_state:
 if "message" not in st.session_state:
     st.session_state.message = ""
 
-# =========================
-# FORM
-# =========================
 with st.form("feedback_form", clear_on_submit=True):
     name = st.text_input("Your Name", key="name")
     email = st.text_input("Your Email", key="email")
@@ -457,9 +452,6 @@ with st.form("feedback_form", clear_on_submit=True):
 
     submit = st.form_submit_button("Send Feedback")
 
-# =========================
-# SEND EMAIL
-# =========================
 if submit:
     if name and email and message:
         try:
@@ -489,17 +481,21 @@ Message:
             server.sendmail(sender_email, receiver_email, msg.as_string())
             server.quit()
 
-            st.success("✅ Feedback sent successfully!")
+            # 🔥 SUCCESS MESSAGE PLACEHOLDER
+            success_box = st.empty()
+            success_box.success("✅ Feedback sent successfully!")
+
+            # wait 3 seconds
+            time.sleep(3)
+
+            # remove message
+            success_box.empty()
 
         except Exception as e:
             st.error(f"❌ Failed to send feedback: {e}")
 
     else:
         st.warning("⚠️ Please fill all fields.")
-
-
-
-
 
 
 import streamlit as st
