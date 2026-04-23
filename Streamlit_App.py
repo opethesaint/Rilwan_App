@@ -144,7 +144,7 @@ import matplotlib.pyplot as plt
 st.set_page_config(layout="wide")
 
 # ---------------- LOAD DATA ----------------
-df = pd.read_csv("your_file.csv")
+
 
 # ---------------- SIDEBAR ----------------
 st.sidebar.title("🔍 Filter Dashboard")
