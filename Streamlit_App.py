@@ -580,8 +580,6 @@ def add_live_chat(widget_id):
     """
     components.html(chat_script, height=0, width=0)
 
-# Replace 'YOUR_ID_HERE' with your actual service ID
-add_live_chat("YOUR_ID_HERE")
 
-st.title("My Streamlit App")
-st.write("The chat widget should appear in the bottom right corner.")
+
+
