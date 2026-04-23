@@ -34,11 +34,11 @@ import streamlit as st
 import streamlit as st
 
 # Floating style container
+import streamlit as st
 import streamlit.components.v1 as components
 
-st.markdown("""
-    <div style="position: fixed; bottom: 50px; right: 20px;">
-   tawk_widget = """
+tawk_widget = """
+<!--Start of Tawk.to Script-->
 <script type="text/javascript">
 var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 
@@ -54,12 +54,10 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
     s0.parentNode.insertBefore(s1, s0);
 })();
 </script>
+<!--End of Tawk.to Script-->
 """
 
-components.html(tawk_widget, height=110)
-    </div>
-""", unsafe_allow_html=True)
-
+components.html(tawk_widget, height=50)
 
 import streamlit as st
 
