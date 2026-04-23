@@ -451,11 +451,11 @@ if submit:
     if name and email and message:
         try:
             # YOUR EMAIL DETAILS
-            sender_email = "hannystore@gmail.com"
-            receiver_email = "hannystore@gmail.com"
+            sender_email = "opethesaint@gmail.com"
+            receiver_email = "opethesaint@gmail.com"
 
             # IMPORTANT: use Gmail App Password (NOT your normal password)
-            app_password = "dstnvcbdmjqrbxbo"
+            app_password = "lofevlbskhzcvfde"
 
             # Create email content
             subject = f"New Feedback from {name}"
