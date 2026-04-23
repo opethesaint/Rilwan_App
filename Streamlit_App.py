@@ -8,34 +8,20 @@ import streamlit.components.v1 as components
 df = pd.read_csv("Analysis_Ready_DS_jobs.csv")
 
 import streamlit.components.v1 as components
+st.markdown(
+    """
+    <script src="https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us" async></script>
+    """,
+    unsafe_allow_html=True
+)
 
-TAWK_SCRIPT = """
-<style>
-#tawk-position {
-    position: fixed;
-    bottom: 200px;
-    right: 200px;
-    z-index: 9999;
-}
-</style>
 
-<div id="tawk-position"></div>
 
-<script type="text/javascript">
-var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 
-(function() {
-    var s1 = document.createElement("script");
-    s1.async = true;
-    s1.src = 'https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
-    s1.charset = 'UTF-8';
-    s1.setAttribute('crossorigin', '*');
-    document.body.appendChild(s1);
-})();
-</script>
-"""
 
-components.html(TAWK_SCRIPT, height=200)
+
+
+
 
 import streamlit as st
 components.html("""
