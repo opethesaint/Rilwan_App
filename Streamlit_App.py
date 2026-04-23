@@ -569,10 +569,12 @@ with st.sidebar:
 
 
 
-    import streamlit as st
+import streamlit as st
 import streamlit.components.v1 as components
 
-components.html("""
+st.set_page_config(page_title="My App", layout="wide")
+
+TAWK_SCRIPT = """
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
@@ -586,4 +588,11 @@ s0.parentNode.insertBefore(s1,s0);
 })();
 </script>
 <!--End of Tawk.to Script-->
-""", height=0)
+"""
+
+# 👇 THIS IS THE IMPORTANT LINE YOU ASKED FOR
+components.html(TAWK_SCRIPT, height=0)
+
+# Your normal app content
+st.title("Welcome to My Streamlit App")
+st.write("Live chat is enabled at the bottom-right corner.")
