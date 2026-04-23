@@ -41,8 +41,7 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 components.html(TAWK_SCRIPT, height=100)
 
 
-
-<div style="text-align:center;">
+<div style="">
 
 <script>
 function changeText(){
