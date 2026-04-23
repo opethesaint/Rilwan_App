@@ -36,7 +36,9 @@ import streamlit as st
 # Floating style container
 import streamlit.components.v1 as components
 
-tawk_widget = """
+st.markdown("""
+    <div style="position: fixed; bottom: 50px; right: 20px;">
+   tawk_widget = """
 <script type="text/javascript">
 var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 
@@ -54,8 +56,9 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 </script>
 """
 
-components.html(tawk_widget, height=110, position:bottom, bottom:50px; right:20px)
-
+components.html(tawk_widget, height=110)
+    </div>
+""", unsafe_allow_html=True)
 
 
 import streamlit as st
