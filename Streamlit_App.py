@@ -7,10 +7,7 @@ import streamlit.components.v1 as components
 # Assume df is your DataFrame
 df = pd.read_csv("Analysis_Ready_DS_jobs.csv")
 
-
 import streamlit.components.v1 as components
-
-
 
 TAWK_SCRIPT = """
 <style>
@@ -38,13 +35,7 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 </script>
 """
 
-components.html(TAWK_SCRIPT, height=100)
-
-<script>
-function changeText(){
-    document.getElementById("text").innerHTML = "🔥 JavaScript is working!";
-}
-</script>
+components.html(TAWK_SCRIPT, height=0, width=0)
 
 
 
@@ -62,10 +53,6 @@ function changeText(){
 
 
 
-
-
-with st.sidebar:
-    st.markdown("💡 *Success is built one query at a time.*")
 
 
 
