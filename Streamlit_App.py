@@ -38,6 +38,12 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 tawk_widget = """
+<div style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+">
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
 var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
@@ -55,9 +61,10 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 })();
 </script>
 <!--End of Tawk.to Script-->
+</div>
 """
 
-components.html(tawk_widget, height=50)
+components.html(tawk_widget, height=0)
 
 import streamlit as st
 
