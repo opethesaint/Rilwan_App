@@ -566,22 +566,22 @@ with st.sidebar:
 import streamlit as st
 import streamlit.components.v1 as components
 
-# Using the styled container approach for the Tawk.to component
-st.markdown("""
-    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-        </div>
-""", unsafe_allow_html=True)
-
-components.html("""
+def add_live_chat(widget_id):
+    # This script injects the JS required for a chat bubble
+    chat_script = f"""
     <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-    })();
+    window.$crisp=[];window.CRISP_WEBSITE_ID="{widget_id}";
+    (function(){{
+        d=document;s=d.createElement("script");
+        s.src="https://client.crisp.chat/l.js";
+        s.async=1;d.getElementsByTagName("head")[0].appendChild(s);
+    }})();
     </script>
-    """, height=0)
+    """
+    components.html(chat_script, height=0, width=0)
+
+# Replace 'YOUR_ID_HERE' with your actual service ID
+add_live_chat("YOUR_ID_HERE")
+
+st.title("My Streamlit App")
+st.write("The chat widget should appear in the bottom right corner.")
