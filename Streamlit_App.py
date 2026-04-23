@@ -566,45 +566,55 @@ with st.sidebar:
 import streamlit as st
 import streamlit.components.v1 as components
 
-# We use st.markdown with unsafe_allow_html to inject the fixed-position button
-# AND the script execution logic simultaneously.
+# 1. Load the Tawk.to Script invisibly
+# We set height/width to 0 so it doesn't create a "terrible" gap
+components.html("""
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+""", height=0, width=0)
+
+# 2. Create the Fixed Button in the bottom right
+# We use target="_blank" to link directly to your chat page 
+# since the script toggle is blocked across iframe boundaries.
 st.markdown("""
     <style>
-        .floating-chat-trigger {
+        .chat-container {
             position: fixed;
-            bottom: 50px;
+            bottom: 20px;
             right: 20px;
-            z-index: 999999;
+            z-index: 1000;
         }
-        .chat-btn {
-            background: #25D366; 
-            color: white !important; 
-            padding: 12px 20px; 
-            border-radius: 50px; 
-            text-decoration: none; 
+        .chat-button {
+            background-color: #25D366;
+            color: white !important;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
             font-weight: bold;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+        .chat-button:hover {
+            transform: scale(1.05);
+            background-color: #128C7E;
         }
     </style>
-
-    <div class="floating-chat-trigger">
-        <a href="javascript:void(0);" onclick="Tawk_API.toggle();" class="chat-btn">
+    
+    <div class="chat-container">
+        <a href="https://tawk.to/chat/69e9b89cb84bb21c2c7155f8/1jmsfi8us" 
+           target="_blank" 
+           class="chat-button">
             💬 LIVE CHAT
         </a>
     </div>
-
-    <script type="text/javascript">
-        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-        (function(){
-            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-            s1.async=true;
-            s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
-            s1.charset='UTF-8';
-            s1.setAttribute('crossorigin','*');
-            s0.parentNode.insertBefore(s1,s0);
-        })();
-    </script>
 """, unsafe_allow_html=True)
