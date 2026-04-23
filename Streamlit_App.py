@@ -542,18 +542,7 @@ if "quick_pick" not in st.session_state:
     st.session_state.quick_pick = "Select one..."
 
 # ---------------- SIDEBAR AI ASSISTANT ----------------
-with st.sidebar:
-    st.markdown("""
-    <div style="
-        background:rgba(255,255,255,0.08);
-        padding:15px;
-        border-radius:18px;
-        box-shadow:0 0 15px rgba(0,255,255,0.3);
-        text-align:center;">
-        <h2 style="color:white;">🤖 AI Assistant</h2>
-        <p style="color:lightgray;">Ask me anything</p>
-    </div>
-    """, unsafe_allow_html=True)
+
 
 # ---------------- INPUTS ----------------
 question = st.sidebar.text_input("💬 Type your question", key="user_input")
