@@ -8,11 +8,9 @@ import streamlit.components.v1 as components
 df = pd.read_csv("Analysis_Ready_DS_jobs.csv")
 
 
-import streamlit as st
-import streamlit as st
 import streamlit.components.v1 as components
 
-import streamlit.components.v1 as components
+
 
 TAWK_SCRIPT = """
 <style>
@@ -40,25 +38,18 @@ var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
 </script>
 """
 
-components.html(TAWK_SCRIPT, height=100, width=0)
+components.html(TAWK_SCRIPT, height=100)
 
 
 
+<div style="text-align:center;">
 
-
-
-# Set wide layout before anything else
-st.set_page_config(
-    page_title="Job Data Explorer",
-    layout="wide"
-)
-
-
-import streamlit as st
-
-# Floating style container
-
-
+<script>
+function changeText(){
+    document.getElementById("text").innerHTML = "🔥 JavaScript is working!";
+}
+</script>
+""")
 
 
 
@@ -75,8 +66,6 @@ import streamlit as st
 
 
 
-with st.sidebar:
-    st.info("🌤️ Lagos: 28°C")
 
 
 
