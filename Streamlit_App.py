@@ -111,7 +111,211 @@ h1 {
 
 
 
+import streamlit as st
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
+# ---------------- PAGE CONFIG ----------------
+st.set_page_config(page_title="Job Research Dashboard", layout="wide")
+
+# ---------------- LOAD DATA ----------------
+df = pd.read_csv("your_file.csv")   # change file name
+
+# ---------------- STYLE ----------------
+st.markdown("""
+<style>
+.stButton>button {
+    background-color:#1f77b4;
+    color:white;
+    border-radius:8px;
+    padding:8px 18px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.title("📊 Job Market Research Dashboard")
+
+# ---------------- SIDEBAR FILTERS ----------------
+st.sidebar.header("🔍 Filters")
+
+country = st.sidebar.multiselect(
+    "Select Country", df["Location Country"].dropna().unique()
+)
+
+category = st.sidebar.multiselect(
+    "Select Job Category", df["Job Category"].dropna().unique()
+)
+
+remote = st.sidebar.multiselect(
+    "Remote Option", df["Is Remote"].dropna().unique()
+)
+
+if country:
+    df = df[df["Location Country"].isin(country)]
+
+if category:
+    df = df[df["Job Category"].isin(category)]
+
+if remote:
+    df = df[df["Is Remote"].isin(remote)]
+
+sns.set_style("whitegrid")
+
+# ---------------- FUNCTION ----------------
+def show_chart(fig):
+    st.pyplot(fig)
+
+# ==================================================
+# 1
+st.subheader("1. Which Job Titles Have the Highest Average Salary?")
+if st.button("Show Chart 1"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    top = df.groupby("Job Title")["Avg Salary (K)"].mean().sort_values(ascending=False).head(10)
+    sns.barplot(x=top.values, y=top.index, ax=ax)
+    show_chart(fig)
+
+# 2
+st.subheader("2. Which Job Categories Pay the Most?")
+if st.button("Show Chart 2"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    data = df.groupby("Job Category")["Avg Salary (K)"].mean().sort_values(ascending=False)
+    sns.barplot(x=data.values, y=data.index, ax=ax)
+    show_chart(fig)
+
+# 3
+st.subheader("3. Does Seniority Affect Salary?")
+if st.button("Show Chart 3"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    sns.boxplot(data=df, x="Job Seniority", y="Avg Salary (K)", ax=ax)
+    plt.xticks(rotation=45)
+    show_chart(fig)
+
+# 4
+st.subheader("4. Remote vs Non-Remote Salary Comparison")
+if st.button("Show Chart 4"):
+    fig, ax = plt.subplots(figsize=(8,5))
+    sns.boxplot(data=df, x="Is Remote", y="Avg Salary (K)", ax=ax)
+    show_chart(fig)
+
+# 5
+st.subheader("5. Which Countries Offer the Highest Salaries?")
+if st.button("Show Chart 5"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    data = df.groupby("Location Country")["Avg Salary (K)"].mean().sort_values(ascending=False).head(10)
+    sns.barplot(x=data.values, y=data.index, ax=ax)
+    show_chart(fig)
+
+# 6
+st.subheader("6. Top Hiring Cities by Number of Jobs")
+if st.button("Show Chart 6"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    data = df["Location City"].value_counts().head(10)
+    sns.barplot(x=data.values, y=data.index, ax=ax)
+    show_chart(fig)
+
+# 7
+st.subheader("7. Does Company Rating Relate to Salary?")
+if st.button("Show Chart 7"):
+    fig, ax = plt.subplots(figsize=(8,5))
+    sns.scatterplot(data=df, x="Rating", y="Avg Salary (K)", ax=ax)
+    show_chart(fig)
+
+# 8
+st.subheader("8. Company Size Distribution")
+if st.button("Show Chart 8"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    df["Size"].value_counts().plot(kind="bar", ax=ax)
+    show_chart(fig)
+
+# 9
+st.subheader("9. Which Industries Have Most Job Openings?")
+if st.button("Show Chart 9"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    data = df["Industry"].value_counts().head(10)
+    sns.barplot(x=data.values, y=data.index, ax=ax)
+    show_chart(fig)
+
+# 10
+st.subheader("10. Sector vs Average Salary")
+if st.button("Show Chart 10"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    data = df.groupby("Sector")["Avg Salary (K)"].mean().sort_values(ascending=False).head(10)
+    sns.barplot(x=data.values, y=data.index, ax=ax)
+    show_chart(fig)
+
+# 11
+st.subheader("11. Revenue Band Distribution")
+if st.button("Show Chart 11"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    df["Revenue Band"].value_counts().plot(kind="bar", ax=ax)
+    show_chart(fig)
+
+# 12
+st.subheader("12. Older Companies Pay More?")
+if st.button("Show Chart 12"):
+    fig, ax = plt.subplots(figsize=(8,5))
+    sns.scatterplot(data=df, x="Company Age", y="Avg Salary (K)", ax=ax)
+    show_chart(fig)
+
+# 13
+st.subheader("13. Founded Year Distribution")
+if st.button("Show Chart 13"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    sns.histplot(df["Founded"].dropna(), bins=20, ax=ax)
+    show_chart(fig)
+
+# 14
+st.subheader("14. Ownership Type Distribution")
+if st.button("Show Chart 14"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    df["Type of ownership"].value_counts().head(10).plot(kind="bar", ax=ax)
+    show_chart(fig)
+
+# 15
+st.subheader("15. Min Salary vs Max Salary Relationship")
+if st.button("Show Chart 15"):
+    fig, ax = plt.subplots(figsize=(8,5))
+    sns.scatterplot(data=df, x="Min Salary (K)", y="Max Salary (K)", ax=ax)
+    show_chart(fig)
+
+# 16
+st.subheader("16. Salary Distribution")
+if st.button("Show Chart 16"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    sns.histplot(df["Avg Salary (K)"], bins=30, kde=True, ax=ax)
+    show_chart(fig)
+
+# 17
+st.subheader("17. Top Rated Companies")
+if st.button("Show Chart 17"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    top = df.groupby("Company Name")["Rating"].mean().sort_values(ascending=False).head(10)
+    sns.barplot(x=top.values, y=top.index, ax=ax)
+    show_chart(fig)
+
+# 18
+st.subheader("18. Competitor Count by Industry")
+if st.button("Show Chart 18"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    top = df.groupby("Industry")["Competitor Count"].mean().sort_values(ascending=False).head(10)
+    sns.barplot(x=top.values, y=top.index, ax=ax)
+    show_chart(fig)
+
+# 19
+st.subheader("19. Jobs Available by Seniority Level")
+if st.button("Show Chart 19"):
+    fig, ax = plt.subplots(figsize=(10,5))
+    df["Job Seniority"].value_counts().plot(kind="bar", ax=ax)
+    show_chart(fig)
+
+# 20
+st.subheader("20. Correlation Between Numeric Variables")
+if st.button("Show Chart 20"):
+    fig, ax = plt.subplots(figsize=(10,6))
+    num = df.select_dtypes(include="number")
+    sns.heatmap(num.corr(), annot=True, cmap="coolwarm", ax=ax)
+    show_chart(fig)
 
 
 
