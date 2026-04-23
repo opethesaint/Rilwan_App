@@ -42,7 +42,7 @@ chat_widget = """
 """
 
 # Embed the widget in Streamlit
-st.components.v1.html(chat_widget, height=600)
+st.components.v1.html(chat_widget, height=200)
 
 
 
