@@ -19,7 +19,8 @@ function changeText(){
 </script>
 """, height=0)
 
-import streamlit as st import streamlit.components.v1 as components
+import streamlit as st 
+import streamlit.components.v1 as components
 tawk_widget = """
 <!--Start of Tawk.to Script--> <script type="text/javascript"> var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date(); 
 (function () { var s1 = document.createElement("script"); var s0 = document.getElementsByTagName("script")[0]; s1.async = true; 
