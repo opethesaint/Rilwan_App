@@ -566,55 +566,59 @@ with st.sidebar:
 import streamlit as st
 import streamlit.components.v1 as components
 
-# 1. Load the Tawk.to Script invisibly
-# We set height/width to 0 so it doesn't create a "terrible" gap
+# This component creates its own little world where the button and script can talk.
+# We make the iframe height large enough to hold the button, but we'll use CSS
+# to fix it to the bottom-right of your screen.
 components.html("""
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-""", height=0, width=0)
-
-# 2. Create the Fixed Button in the bottom right
-# We use target="_blank" to link directly to your chat page 
-# since the script toggle is blocked across iframe boundaries.
-st.markdown("""
     <style>
-        .chat-container {
+        /* This styles the button inside the iframe */
+        .floating-btn {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            z-index: 1000;
-        }
-        .chat-button {
-            background-color: #25D366;
-            color: white !important;
-            padding: 12px 24px;
+            background: #25D366;
+            color: white;
+            padding: 15px 25px;
             border-radius: 50px;
             text-decoration: none;
             font-weight: bold;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
-            display: inline-block;
+            font-family: sans-serif;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: none;
+            z-index: 9999;
         }
-        .chat-button:hover {
-            transform: scale(1.05);
-            background-color: #128C7E;
-        }
+        .floating-btn:hover { background: #128C7E; }
     </style>
-    
-    <div class="chat-container">
-        <a href="https://tawk.to/chat/69e9b89cb84bb21c2c7155f8/1jmsfi8us" 
-           target="_blank" 
-           class="chat-button">
-            💬 LIVE CHAT
-        </a>
-    </div>
-""", unsafe_allow_html=True)
+
+    <button class="floating-btn" onclick="toggleChat()">💬 LIVE CHAT</button>
+
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {};
+        var Tawk_LoadStart = new Date();
+
+        // Load Tawk.to Script
+        (function(){
+            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+            s1.async=true;
+            s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
+            s1.charset='UTF-8';
+            s1.setAttribute('crossorigin','*');
+            s0.parentNode.insertBefore(s1,s0);
+        })();
+
+        // This function opens the chat box without opening a new tab
+        function toggleChat() {
+            if (Tawk_API.maximize) {
+                Tawk_API.maximize();
+            } else {
+                alert("Chat is still loading... please wait a second.");
+            }
+        }
+        
+        // Hide the default tiny Tawk bubble so only YOUR button shows
+        Tawk_API.onLoad = function(){
+            Tawk_API.hideWidget();
+        };
+    </script>
+""", height=80)
