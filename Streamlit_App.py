@@ -9,28 +9,42 @@ df = pd.read_csv("Analysis_Ready_DS_jobs.csv")
 
 
 import streamlit as st
+import streamlit as st
+import streamlit.components.v1 as components
 
-chat_widget = """
-<div style="position:fixed; bottom:20px; right:200px; z-index:1000;">
-  <!--Start of Tawk.to Script-->
-  <script type="text/javascript">
-  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-  (function(){
-  var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-  s1.async=true;
-  s1.src='https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
-  s1.charset='UTF-8';
-  s1.setAttribute('crossorigin','*');
-  s0.parentNode.insertBefore(s1,s0);
-  })();
-  </script>
-  <!--End of Tawk.to Script-->
-</div>
+# ---------------- PAGE CONFIG ----------------
+st.set_page_config(layout="wide")
+
+# ---------------- YOUR APP CONTENT ----------------
+st.title("🐉 Dragon Dashboard")
+st.write("Your charts, background, visuals go here...")
+
+# Example chart
+st.line_chart([3, 5, 2, 8, 6])
+
+# ---------------- TAWK CHAT WIDGET ----------------
+TAWK_SCRIPT = """
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+
+(function() {
+    var s1 = document.createElement("script");
+    var s0 = document.getElementsByTagName("script")[0];
+
+    s1.async = true;
+    s1.src = 'https://embed.tawk.to/69e9b89cb84bb21c2c7155f8/1jmsfi8us';
+    s1.charset = 'UTF-8';
+    s1.setAttribute('crossorigin', '*');
+
+    s0.parentNode.insertBefore(s1, s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 """
 
-# Embed the widget in Streamlit
-st.components.v1.html(chat_widget, height=200)
-
+# Hidden container (important)
+components.html(TAWK_SCRIPT, height=0, width=0)
 
 
 import streamlit as st
