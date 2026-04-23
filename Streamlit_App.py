@@ -41,7 +41,7 @@ tawk_widget = """
 <div style="
     position: fixed;
     bottom: 20px;
-    right:20px;
+    right:50px;
     right: 20px;
     z-index: 9999;
 ">
