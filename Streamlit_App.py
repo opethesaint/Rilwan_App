@@ -434,16 +434,23 @@ import streamlit as st
 import smtplib
 from email.mime.text import MIMEText
 import time
+import re
 
 st.markdown("---")
 st.header("📩 Send Feedback")
 
+# Session state
 if "name" not in st.session_state:
     st.session_state.name = ""
 if "email" not in st.session_state:
     st.session_state.email = ""
 if "message" not in st.session_state:
     st.session_state.message = ""
+
+# Email validation function
+def is_valid_email(email):
+    pattern = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+    return re.match(pattern, email) is not None
 
 with st.form("feedback_form", clear_on_submit=True):
     name = st.text_input("Your Name", key="name")
@@ -454,13 +461,16 @@ with st.form("feedback_form", clear_on_submit=True):
 
 if submit:
     if name and email and message:
-        try:
-            sender_email = "opethesaint@gmail.com"
-            receiver_email = "opethesaint@gmail.com"
-            app_password = "lofevlbskhzcvfde"
+        if not is_valid_email(email):
+            st.warning("⚠️ Please enter a valid email address (example: name@gmail.com)")
+        else:
+            try:
+                sender_email = "opethesaint@gmail.com"
+                receiver_email = "opethesaint@gmail.com"
+                app_password = "lofevlbskhzcvfde"
 
-            subject = f"New Feedback from {name}"
-            body = f"""
+                subject = f"New Feedback from {name}"
+                body = f"""
 You have received new feedback:
 
 Name: {name}
@@ -470,32 +480,29 @@ Message:
 {message}
 """
 
-            msg = MIMEText(body)
-            msg["Subject"] = subject
-            msg["From"] = sender_email
-            msg["To"] = receiver_email
+                msg = MIMEText(body)
+                msg["Subject"] = subject
+                msg["From"] = sender_email
+                msg["To"] = receiver_email
 
-            server = smtplib.SMTP("smtp.gmail.com", 587)
-            server.starttls()
-            server.login(sender_email, app_password)
-            server.sendmail(sender_email, receiver_email, msg.as_string())
-            server.quit()
+                server = smtplib.SMTP("smtp.gmail.com", 587)
+                server.starttls()
+                server.login(sender_email, app_password)
+                server.sendmail(sender_email, receiver_email, msg.as_string())
+                server.quit()
 
-            # 🔥 SUCCESS MESSAGE PLACEHOLDER
-            success_box = st.empty()
-            success_box.success("✅ Feedback sent successfully!")
+                success_box = st.empty()
+                success_box.success("✅ Feedback sent successfully!")
+                time.sleep(3)
+                success_box.empty()
 
-            # wait 3 seconds
-            time.sleep(3)
-
-            # remove message
-            success_box.empty()
-
-        except Exception as e:
-            st.error(f"❌ Failed to send feedback: {e}")
-
+            except Exception as e:
+                st.error(f"❌ Failed to send feedback: {e}")
     else:
         st.warning("⚠️ Please fill all fields.")
+
+
+
 
 
 import streamlit as st
