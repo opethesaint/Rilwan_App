@@ -686,7 +686,7 @@ social_footer = """
     margin-top:40px;
     border-top:1px solid #ddd;
 ">
-    <a href="https://x.com/yourusername" target="_blank" style="margin:15px;">
+    <a href="https://x.com/Opethesaint" target="_blank" style="margin:15px;">
         <img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" width="40">
     </a>
     <a href="https://facebook.com/Ogundiperilwanrotimi" target="_blank" style="margin:15px;">
