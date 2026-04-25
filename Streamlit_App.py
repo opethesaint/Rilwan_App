@@ -448,9 +448,11 @@ if "message" not in st.session_state:
     st.session_state.message = ""
 
 # Email validation function
+import re
+
 def is_valid_email(email):
-    pattern = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
-    return re.match(pattern, email) is not None
+    pattern = r"^[A-Za-z0-9._%+-]+@(gmail\.com|yahoo\.com)$"
+    return re.match(pattern, email, re.IGNORECASE) is not None
 
 with st.form("feedback_form", clear_on_submit=True):
     name = st.text_input("Your Name", key="name")
