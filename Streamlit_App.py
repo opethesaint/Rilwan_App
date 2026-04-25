@@ -666,3 +666,32 @@ st.markdown("""
 
 
 
+import streamlit as st
+import streamlit.components.v1 as components
+
+# ===============================
+# SOCIAL MEDIA FOOTER
+# ===============================
+social_footer = """
+<div style="
+    text-align:center;
+    padding:20px;
+    margin-top:40px;
+    border-top:1px solid #ddd;
+">
+    <a href="https://facebook.com/yourusername" target="_blank" style="margin:15px;">
+        <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="40">
+    </a>
+
+    <a href="https://instagram.com/yourusername" target="_blank" style="margin:15px;">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="40">
+    </a>
+
+    <a href="https://x.com/yourusername" target="_blank" style="margin:15px;">
+        <img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" width="40">
+    </a>
+</div>
+"""
+
+components.html(social_footer, height=100)
+
