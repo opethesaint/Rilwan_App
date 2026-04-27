@@ -33,15 +33,17 @@ components.html(CLARITY_CODE, height=0)
 import streamlit as st
 import json
 import os
+import time
 from datetime import datetime
 from collections import Counter
 
 st.set_page_config(page_title="Ayobami App")
 
 # ---------------------------
-# FILE STORAGE
+# FILES
 # ---------------------------
 USER_FILE = "users.json"
+CHAT_FILE = "chat.json"
 
 
 # ---------------------------
@@ -57,6 +59,16 @@ def save_users(users):
     with open(USER_FILE, "w") as f:
         json.dump(users, f)
 
+def load_chat():
+    if os.path.exists(CHAT_FILE):
+        with open(CHAT_FILE, "r") as f:
+            return json.load(f)
+    return []
+
+def save_chat(chat):
+    with open(CHAT_FILE, "w") as f:
+        json.dump(chat, f)
+
 
 # ---------------------------
 # SESSION INIT
@@ -64,8 +76,23 @@ def save_users(users):
 if "users" not in st.session_state:
     st.session_state.users = load_users()
 
+if "chat" not in st.session_state:
+    st.session_state.chat = load_chat()
+
 if "username" not in st.session_state:
     st.session_state.username = None
+
+if "last_active" not in st.session_state:
+    st.session_state.last_active = {}
+
+
+# ---------------------------
+# ONLINE STATUS
+# ---------------------------
+def is_online(username, timeout=60):
+    if username not in st.session_state.last_active:
+        return False
+    return (time.time() - st.session_state.last_active[username]) < timeout
 
 
 # ---------------------------
@@ -95,25 +122,34 @@ if st.session_state.username is None:
                     save_users(st.session_state.users)
                     st.success("Account created successfully!")
             else:
-                st.warning("Please fill all fields")
+                st.warning("Fill all fields")
 
         # LOGIN
         if option == "Login":
 
-            # ADMIN LOGIN
+            # ADMIN
             if u == "admin" and p == "admin123":
                 st.session_state.username = "admin"
+                st.session_state.last_active["admin"] = time.time()
                 st.rerun()
 
-            # USER LOGIN
+            # USER
             elif u in st.session_state.users and st.session_state.users[u]["password"] == p:
                 st.session_state.username = u
+                st.session_state.last_active[u] = time.time()
                 st.rerun()
 
             else:
                 st.error("Invalid login")
 
     st.stop()
+
+
+# ---------------------------
+# HEARTBEAT (LIVE STATUS)
+# ---------------------------
+if st.session_state.username:
+    st.session_state.last_active[st.session_state.username] = time.time()
 
 
 # ---------------------------
@@ -138,87 +174,115 @@ st.success(f"Logged in as: {st.session_state.username}")
 if st.session_state.username == "admin":
 
     st.markdown("---")
-    st.header("🛠 Admin Analytics Dashboard")
+    st.header("🛠 Admin Dashboard")
 
     users = st.session_state.users
 
     if users:
 
-        # ---------------------------
-        # METRICS
-        # ---------------------------
         st.metric("Total Users", len(users))
 
-        st.markdown("---")
+        # ---------------------------
+        # USERS TABLE
+        # ---------------------------
+        st.subheader("📋 Users Overview")
 
-        # ---------------------------
-        # TABLE DATA
-        # ---------------------------
-        usernames = []
-        passwords = []
-        dates = []
+        rows = []
 
         for username, data in users.items():
-            usernames.append(username)
-            passwords.append(data["password"])
-            dates.append(data["registered_at"])
+            rows.append({
+                "Username": username,
+                "Password": data["password"],
+                "Registered At": data["registered_at"],
+                "Status": "🟢 Online" if is_online(username) else "⚫ Offline"
+            })
 
-        st.subheader("📋 Registered Users")
-
-        st.dataframe(
-            {
-                "Username": usernames,
-                "Password": passwords,
-                "Registered At": dates
-            },
-            use_container_width=True
-        )
+        st.dataframe(rows, use_container_width=True)
 
         # ---------------------------
-        # DELETE USER (FIXED)
+        # DELETE USER
         # ---------------------------
         st.markdown("---")
         st.subheader("🗑 Delete User")
 
         user_to_delete = st.selectbox(
-            "Select user to delete",
+            "Select user",
             options=[u for u in users.keys() if u != "admin"]
         )
 
         if st.button("Delete User"):
-            if user_to_delete in st.session_state.users:
-                del st.session_state.users[user_to_delete]
-                save_users(st.session_state.users)
-                st.success(f"Deleted {user_to_delete}")
-                st.rerun()
+            del st.session_state.users[user_to_delete]
+            save_users(st.session_state.users)
+            st.success("User deleted")
+            st.rerun()
 
         # ---------------------------
-        # ANALYTICS
+        # CHAT MONITOR (ADMIN VIEW)
         # ---------------------------
         st.markdown("---")
-        st.subheader("📊 Registration Analytics")
+        st.subheader("💬 All Chats (Admin View)")
 
-        dates_list = [data["registered_at"].split(" ")[0] for data in users.values()]
-        daily_counts = Counter(dates_list)
-
-        st.bar_chart(daily_counts)
-
-        # EXTRA INSIGHTS
-        st.markdown("### 🧠 Insights")
-
-        st.info(f"Earliest user: {min(dates)}")
-        st.info(f"Latest user: {max(dates)}")
+        if st.session_state.chat:
+            for msg in st.session_state.chat:
+                st.write(f"🧑 {msg['sender']} ➜ {msg['receiver']}: {msg['message']} ({msg['time']})")
+        else:
+            st.info("No messages yet.")
 
     else:
         st.warning("No users registered yet.")
 
 
 # ---------------------------
-# USER DASHBOARD
+# USER DASHBOARD + CHAT
 # ---------------------------
 else:
+
     st.markdown("---")
-  
+    st.subheader("💬 Live Chat System")
+
+    users = list(st.session_state.users.keys())
+
+    if len(users) > 1:
+
+        receiver = st.selectbox(
+            "Chat with:",
+            [u for u in users if u != st.session_state.username]
+        )
+
+        message = st.text_input("Type message")
+
+        if st.button("Send"):
+            if message:
+
+                st.session_state.chat.append({
+                    "sender": st.session_state.username,
+                    "receiver": receiver,
+                    "message": message,
+                    "time": datetime.now().strftime("%H:%M:%S")
+                })
+
+                save_chat(st.session_state.chat)
+                st.rerun()
+
+        st.markdown("---")
+        st.subheader("📩 Conversation")
+
+        for msg in st.session_state.chat:
+            if (
+                (msg["sender"] == st.session_state.username and msg["receiver"] == receiver)
+                or
+                (msg["sender"] == receiver and msg["receiver"] == st.session_state.username)
+            ):
+                if msg["sender"] == st.session_state.username:
+                    st.markdown(f"🟢 You: {msg['message']} _({msg['time']})_")
+                else:
+                    st.markdown(f"🔵 {msg['sender']}: {msg['message']} _({msg['time']})_")
+
+    else:
+        st.info("No other users to chat with yet.")
+
+
+
 
 
 
