@@ -1010,7 +1010,7 @@ from datetime import datetime
 # ==================================================
 # CONFIG
 # ==================================================
-st.set_page_config(page_title="Ayobami Chat App", layout="wide")
+st.set_page_config(page_title="Chat App", layout="wide")
 
 DATA_DIR = Path("chat_backend")
 DATA_DIR.mkdir(exist_ok=True)
@@ -1019,12 +1019,20 @@ MSG_FILE = DATA_DIR / "messages.json"
 USER_FILE = DATA_DIR / "online_users.json"
 
 # ==================================================
-# HELPERS
+# SAFE JSON LOADER (FIX CORRUPTION)
 # ==================================================
 def load_json(file, default):
-    if file.exists():
-        with open(file, "r", encoding="utf-8") as f:
-            return json.load(f)
+    try:
+        if file.exists():
+            with open(file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+                # FORCE LIST SAFETY
+                if isinstance(data, list) or isinstance(data, dict):
+                    return data
+    except:
+        pass
+
     return default
 
 def save_json(file, data):
@@ -1044,11 +1052,13 @@ def get_online(current):
     now = datetime.now()
 
     online = []
-    for u, last_seen in users.items():
+
+    for u, last in users.items():
         if u == current:
             continue
+
         try:
-            if (now - datetime.fromisoformat(last_seen)).seconds <= 30:
+            if (now - datetime.fromisoformat(last)).seconds <= 30:
                 online.append(u)
         except:
             pass
@@ -1056,10 +1066,22 @@ def get_online(current):
     return sorted(online)
 
 # ==================================================
-# MESSAGES
+# MESSAGES (SAFE STORAGE)
 # ==================================================
 def load_messages():
-    return load_json(MSG_FILE, [])
+    data = load_json(MSG_FILE, [])
+
+    # MUST BE LIST
+    if not isinstance(data, list):
+        return []
+
+    # REMOVE BAD ENTRIES
+    clean = []
+    for m in data:
+        if isinstance(m, dict):
+            clean.append(m)
+
+    return clean
 
 def save_messages(msgs):
     save_json(MSG_FILE, msgs)
@@ -1077,16 +1099,22 @@ def send_message(frm, to, text):
 
     save_messages(msgs)
 
+# ==================================================
+# FIXED GET MESSAGES (NO CRASH)
+# ==================================================
 def get_messages(me, target):
     msgs = load_messages()
 
-    # GLOBAL CHAT
-    if target == "Global Chat":
-        return [m for m in msgs if m.get("to") == "global"]
+    if not isinstance(msgs, list):
+        return []
 
-    # PRIVATE CHAT
+    clean_msgs = [m for m in msgs if isinstance(m, dict)]
+
+    if target == "Global Chat":
+        return [m for m in clean_msgs if m.get("to") == "global"]
+
     return [
-        m for m in msgs
+        m for m in clean_msgs
         if (
             (m.get("from") == me and m.get("to") == target)
             or (m.get("from") == target and m.get("to") == me)
@@ -1094,7 +1122,7 @@ def get_messages(me, target):
     ]
 
 # ==================================================
-# LOGIN (SIMPLE DEMO)
+# LOGIN (DEMO)
 # ==================================================
 if "username" not in st.session_state:
     st.session_state.username = None
@@ -1102,7 +1130,7 @@ if "username" not in st.session_state:
 if st.session_state.username is None:
     st.title("🔐 Login")
 
-    user = st.text_input("Username", key="login_user")
+    user = st.text_input("Username", key="login_input")
 
     if st.button("Login", key="login_btn"):
         if user.strip():
@@ -1112,13 +1140,13 @@ if st.session_state.username is None:
     st.stop()
 
 # ==================================================
-# USER SESSION
+# SESSION USER
 # ==================================================
 current_user = st.session_state.username
 update_online(current_user)
 
 # ==================================================
-# HEADER
+# HEADER (FIXED KEY)
 # ==================================================
 col1, col2 = st.columns([8, 1])
 
@@ -1144,7 +1172,7 @@ chat_target = st.selectbox(
 st.metric("🟢 Online Users", len(online_users))
 
 # ==================================================
-# CHAT BOX
+# CHAT UI
 # ==================================================
 st.markdown("---")
 chat_box = st.container(height=450)
@@ -1153,9 +1181,9 @@ with chat_box:
     messages = get_messages(current_user, chat_target)
 
     if not messages:
-        st.info("No messages yet. Start chatting 👋")
+        st.info("No messages yet 👋")
 
-    for msg in messages:
+    for i, msg in enumerate(messages):
 
         mine = msg.get("from") == current_user
         safe_text = html.escape(msg.get("text", "")).replace("\n", "<br>")
@@ -1217,6 +1245,9 @@ if st.button("Send", key="send_btn"):
 # ==================================================
 time.sleep(2)
 st.rerun()
+
+
+
 
 
 
