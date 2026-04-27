@@ -34,6 +34,7 @@ import streamlit as st
 import json
 import os
 import hashlib
+import re
 from datetime import datetime
 from collections import Counter
 
@@ -50,6 +51,26 @@ USER_FILE = "users.json"
 # ---------------------------
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
+
+
+def validate_password(password):
+    """
+    Rules:
+    - At least 6 characters
+    - Starts with capital letter
+    - Ends with number
+    """
+
+    if len(password) < 6:
+        return False, "Password must be at least 6 characters"
+
+    if not password[0].isupper():
+        return False, "Password must start with a capital letter"
+
+    if not password[-1].isdigit():
+        return False, "Password must end with a number"
+
+    return True, "Valid password"
 
 
 def load_users():
@@ -86,15 +107,24 @@ if st.session_state.username is None:
     u = st.text_input("Username")
     p = st.text_input("Password", type="password")
 
+    st.info("Password must start with capital letter, end with number, min 6 characters")
+
     if st.button(option):
 
         # ---------------------------
-        # CREATE ACCOUNT (HASH PASSWORD)
+        # CREATE ACCOUNT
         # ---------------------------
         if option == "Create Account":
             if u and p:
-                if u in st.session_state.users:
+
+                valid, msg = validate_password(p)
+
+                if not valid:
+                    st.error(msg)
+
+                elif u in st.session_state.users:
                     st.error("Username already exists")
+
                 else:
                     st.session_state.users[u] = {
                         "password": hash_password(p),
@@ -102,19 +132,21 @@ if st.session_state.username is None:
                     }
                     save_users(st.session_state.users)
                     st.success("Account created successfully!")
+
             else:
                 st.warning("Please fill all fields")
 
         # ---------------------------
-        # LOGIN (CHECK HASHED PASSWORD)
+        # LOGIN
         # ---------------------------
         if option == "Login":
 
-            # ADMIN LOGIN (still plain for simplicity)
+            # ADMIN LOGIN
             if u == "admin" and p == "admin123":
                 st.session_state.username = "admin"
                 st.rerun()
 
+            # USER LOGIN (hashed check)
             elif u in st.session_state.users and st.session_state.users[u]["password"] == hash_password(p):
                 st.session_state.username = u
                 st.rerun()
@@ -157,16 +189,19 @@ if st.session_state.username == "admin":
 
         st.markdown("---")
 
+        # ---------------------------
+        # USER TABLE
+        # ---------------------------
         usernames = []
         passwords = []
         dates = []
 
         for username, data in users.items():
             usernames.append(username)
-            passwords.append(data["password"])  # hashed now
+            passwords.append(data["password"])  # hashed
             dates.append(data["registered_at"])
 
-        st.subheader("📋 Registered Users (Hashed Passwords)")
+        st.subheader("📋 Registered Users")
 
         st.dataframe(
             {
@@ -219,7 +254,7 @@ if st.session_state.username == "admin":
 # ---------------------------
 else:
     st.markdown("---")
-    
+ 
   
 
 
