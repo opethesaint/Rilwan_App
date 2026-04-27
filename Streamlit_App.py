@@ -33,29 +33,18 @@ components.html(CLARITY_CODE, height=0)
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, db
+import json
 
 # ---------- INIT FIREBASE ----------
 if not firebase_admin._apps:
 
-    cred_dict = st.secrets["firebase"]
+    cred_json = json.loads(st.secrets["firebase"]["service_account"])
 
-    cred = credentials.Certificate({
-        "type": cred_dict["type"],
-        "project_id": cred_dict["project_id"],
-        "private_key_id": cred_dict["private_key_id"],
-        "private_key": cred_dict["private_key"].replace("\\n", "\n"),
-        "client_email": cred_dict["client_email"],
-        "client_id": cred_dict["client_id"],
-        "auth_uri": cred_dict["auth_uri"],
-        "token_uri": cred_dict["token_uri"],
-        "auth_provider_x509_cert_url": cred_dict["auth_provider_x509_cert_url"],
-        "client_x509_cert_url": cred_dict["client_x509_cert_url"]
-    })
+    cred = credentials.Certificate(cred_json)
 
     firebase_admin.initialize_app(cred, {
         "databaseURL": "https://YOUR_PROJECT.firebaseio.com/"
     })
-
 
 
 
