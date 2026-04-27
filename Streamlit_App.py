@@ -44,7 +44,8 @@ if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {
         "databaseURL": "https://YOUR_PROJECT.firebaseio.com/"
     })
-"""
+
+
 
 
 import streamlit as st
