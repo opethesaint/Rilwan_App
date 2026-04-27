@@ -32,23 +32,27 @@ components.html(CLARITY_CODE, height=0)
 ####
 import streamlit as st
 
-st.title("Login Page")
+st.set_page_config(page_title="Ayobami App")
 
+# ---------------- LOGIN GATE ----------------
 if "username" not in st.session_state:
-    username = st.text_input("Enter your name")
 
-    if st.button("Login"):
-        if username:
-            st.session_state.username = username
-            st.success(f"Welcome {username}")
+    st.title("🔒 Enter Your Username to Continue")
+
+    username = st.text_input("Username")
+
+    if st.button("Enter App"):
+        if username.strip():
+            st.session_state.username = username.strip()
+            st.rerun()
         else:
-            st.warning("Please enter a name")
-else:
-    st.success(f"You are logged in as {st.session_state.username}")
+            st.warning("Please enter a username")
 
-    if st.button("Logout"):
-        del st.session_state.username
+    st.stop()  # 🔒 blocks rest of app
 
+# ---------------- MAIN APP ----------------
+st.title("Welcome to Ayobami App 🎉")
+st.write(f"Logged in as: {st.session_state.username}")
 
 
 
