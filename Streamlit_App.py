@@ -43,7 +43,7 @@ USER_FILE = "users.json"
 
 
 # ---------------------------
-# FUNCTIONS (IMPORTANT: MUST BE AT TOP)
+# FUNCTIONS
 # ---------------------------
 def load_users():
     if os.path.exists(USER_FILE):
@@ -100,7 +100,7 @@ if st.session_state.username is None:
                 st.session_state.username = "admin"
                 st.rerun()
 
-            # NORMAL USER LOGIN
+            # USER LOGIN
             elif u in st.session_state.users and st.session_state.users[u] == p:
                 st.session_state.username = u
                 st.rerun()
@@ -128,18 +128,34 @@ st.success(f"Logged in as: {st.session_state.username}")
 
 
 # ---------------------------
-# ADMIN DASHBOARD
+# ADMIN DASHBOARD + ANALYTICS
 # ---------------------------
 if st.session_state.username == "admin":
 
     st.markdown("---")
-    st.header("🛠 Admin Dashboard")
+    st.header("🛠 Admin Analytics Dashboard")
 
     users = st.session_state.users
 
     if users:
 
-        st.subheader("Registered Users")
+        # ---------------------------
+        # METRICS
+        # ---------------------------
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.metric("Total Users", len(users))
+
+        with col2:
+            st.metric("Total Admins", 1)
+
+        st.markdown("---")
+
+        # ---------------------------
+        # USER TABLE
+        # ---------------------------
+        st.subheader("📋 Registered Users")
 
         st.dataframe(
             {
@@ -148,8 +164,6 @@ if st.session_state.username == "admin":
             },
             use_container_width=True
         )
-
-        st.info(f"Total users: {len(users)}")
 
         # ---------------------------
         # DELETE USER
@@ -162,23 +176,62 @@ if st.session_state.username == "admin":
         )
 
         if st.button("Delete User"):
-            if user_to_delete in st.session_state.users:
+            del st.session_state.users[user_to_delete]
+            save_users(st.session_state.users)
+            st.success(f"Deleted {user_to_delete}")
+            st.rerun()
 
-                del st.session_state.users[user_to_delete]
-                save_users(st.session_state.users)
+        st.markdown("---")
 
-                st.success(f"User '{user_to_delete}' deleted successfully!")
-                st.rerun()
+        # ---------------------------
+        # ANALYTICS SECTION
+        # ---------------------------
+        st.subheader("📊 User Analytics")
+
+        usernames = list(users.keys())
+
+        # 1. Username length analysis
+        username_lengths = [len(u) for u in usernames]
+
+        st.write("📏 Username Length Distribution")
+        st.bar_chart(username_lengths)
+
+        # 2. First letter distribution
+        first_letters = {}
+
+        for u in usernames:
+            letter = u[0].upper()
+            first_letters[letter] = first_letters.get(letter, 0) + 1
+
+        st.write("🔤 First Letter Distribution")
+        st.bar_chart(first_letters)
+
+        # 3. Summary insights
+        st.markdown("### 🧠 Insights")
+
+        avg_length = sum(username_lengths) / len(username_lengths)
+
+        st.info(f"Average username length: {avg_length:.2f}")
+        st.info(f"Longest username: {max(usernames, key=len)}")
+        st.info(f"Shortest username: {min(usernames, key=len)}")
 
     else:
         st.warning("No users registered yet.")
 
 
 # ---------------------------
-# NORMAL USER DASHBOARD
+# USER DASHBOARD
 # ---------------------------
 else:
     st.markdown("---")
+    st.subheader("👤 User Dashboard")
+    st.write("Welcome to your app area.")
+
+
+
+
+
+
 
 
 
