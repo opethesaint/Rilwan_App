@@ -1010,7 +1010,7 @@ from datetime import datetime
 # ==================================================
 # CONFIG
 # ==================================================
-st.set_page_config(page_title="Ayobami App Chat", layout="wide")
+st.set_page_config(page_title="Ayobami App", layout="wide")
 
 DATA_DIR = Path("chat_backend")
 DATA_DIR.mkdir(exist_ok=True)
@@ -1034,45 +1034,41 @@ def save_json(file, data):
 # ==================================================
 # ONLINE USERS
 # ==================================================
-def update_online(username):
+def update_online(user):
     users = load_json(USER_FILE, {})
-    users[username] = datetime.now().isoformat()
+    users[user] = datetime.now().isoformat()
     save_json(USER_FILE, users)
 
 def get_online(current):
     users = load_json(USER_FILE, {})
     now = datetime.now()
+
     online = []
-
-    for user, last_seen in users.items():
-        if user == current:
+    for u, last in users.items():
+        if u == current:
             continue
-
-        last_seen = datetime.fromisoformat(last_seen)
-        if (now - last_seen).seconds <= 30:
-            online.append(user)
+        if (now - datetime.fromisoformat(last)).seconds <= 30:
+            online.append(u)
 
     return sorted(online)
 
 # ==================================================
-# CHAT FUNCTIONS
+# CHAT
 # ==================================================
 def load_messages():
     return load_json(MSG_FILE, [])
 
-def save_messages(messages):
-    save_json(MSG_FILE, messages)
+def save_messages(msgs):
+    save_json(MSG_FILE, msgs)
 
-def send_message(sender, receiver, text):
+def send_message(frm, to, text):
     msgs = load_messages()
-
     msgs.append({
-        "from": sender,
-        "to": receiver,
+        "from": frm,
+        "to": to,
         "text": text,
         "time": datetime.now().strftime("%H:%M")
     })
-
     save_messages(msgs)
 
 def get_messages(me, target):
@@ -1088,8 +1084,7 @@ def get_messages(me, target):
     ]
 
 # ==================================================
-# LOGIN DEMO
-# Replace with your own login system
+# LOGIN (DEMO)
 # ==================================================
 if "username" not in st.session_state:
     st.session_state.username = None
@@ -1097,11 +1092,11 @@ if "username" not in st.session_state:
 if st.session_state.username is None:
     st.title("🔐 Login")
 
-    username = st.text_input("Enter Username")
+    user = st.text_input("Username", key="login_user")
 
-    if st.button("Login"):
-        if username.strip():
-            st.session_state.username = username.strip()
+    if st.button("Login", key="login_btn"):
+        if user.strip():
+            st.session_state.username = user.strip()
             st.rerun()
 
     st.stop()
@@ -1113,7 +1108,7 @@ current_user = st.session_state.username
 update_online(current_user)
 
 # ==================================================
-# HEADER
+# HEADER (FIXED BUTTON KEY)
 # ==================================================
 c1, c2 = st.columns([8, 1])
 
@@ -1121,24 +1116,25 @@ with c1:
     st.title(f"💬 Welcome {current_user}")
 
 with c2:
-    if st.button("Logout"):
+    if st.button("Logout", key="logout_btn"):
         st.session_state.username = None
         st.rerun()
 
 # ==================================================
-# CHAT SELECT
+# ONLINE USERS
 # ==================================================
-online_users = get_online(current_user)
+online = get_online(current_user)
 
 chat_target = st.selectbox(
     "Chat With",
-    ["Global Chat"] + online_users
+    ["Global Chat"] + online,
+    key="chat_select"
 )
 
-st.metric("🟢 Online Users", len(online_users))
+st.metric("🟢 Online Users", len(online))
 
 # ==================================================
-# CHAT AREA
+# CHAT DISPLAY
 # ==================================================
 st.markdown("---")
 chat_box = st.container(height=450)
@@ -1149,9 +1145,9 @@ with chat_box:
     if not messages:
         st.info("No messages yet.")
 
-    for msg in messages:
-        mine = msg["from"] == current_user
+    for i, msg in enumerate(messages):
 
+        mine = msg["from"] == current_user
         safe_text = html.escape(msg["text"]).replace("\n", "<br>")
 
         if mine:
@@ -1159,8 +1155,8 @@ with chat_box:
                 f"""
                 <div style="
                     background:#DCF8C6;
-                    padding:12px;
-                    border-radius:15px;
+                    padding:10px;
+                    border-radius:12px;
                     margin:6px 0;
                     max-width:70%;
                     margin-left:auto;
@@ -1178,8 +1174,8 @@ with chat_box:
                 f"""
                 <div style="
                     background:#F1F0F0;
-                    padding:12px;
-                    border-radius:15px;
+                    padding:10px;
+                    border-radius:12px;
                     margin:6px 0;
                     max-width:70%;
                     margin-right:auto;
@@ -1198,15 +1194,12 @@ with chat_box:
 # ==================================================
 st.markdown("---")
 
-msg = st.text_area("Type Message", height=80)
+msg = st.text_area("Type message", key="msg_input")
 
-if st.button("📤 Send", use_container_width=True):
-
+if st.button("Send", key="send_btn"):
     if msg.strip():
-
         receiver = "global" if chat_target == "Global Chat" else chat_target
         send_message(current_user, receiver, msg.strip())
-
         st.rerun()
 
 # ==================================================
@@ -1214,6 +1207,9 @@ if st.button("📤 Send", use_container_width=True):
 # ==================================================
 time.sleep(2)
 st.rerun()
+
+
+
 
 
 
