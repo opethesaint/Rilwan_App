@@ -13,31 +13,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 
-import streamlit as st
-import streamlit.components.v1 as components
-import streamlit as st
 
-st.set_page_config(page_title="My App", layout="wide")
-
-# Google Analytics Tag
-import streamlit as st
-from streamlit_analytics2 import streamlit_analytics
-
-with streamlit_analytics():
-    st.title("My App")
-    st.write("Welcome")
-st.markdown("""
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-RGM06M7XK0"></script>
-<script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-RGM06M7XK0');
-</script>
-""", unsafe_allow_html=True)
-
-st.title("My Streamlit App")
 
 
 
