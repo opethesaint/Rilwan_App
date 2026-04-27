@@ -31,10 +31,10 @@ components.html(CLARITY_CODE, height=0)
 
 ####
 import streamlit as st
+import streamlit as st
 import json
 import os
 import hashlib
-import re
 from datetime import datetime
 from collections import Counter
 
@@ -54,13 +54,6 @@ def hash_password(password):
 
 
 def validate_password(password):
-    """
-    Rules:
-    - At least 6 characters
-    - Starts with capital letter
-    - Ends with number
-    """
-
     if len(password) < 6:
         return False, "Password must be at least 6 characters"
 
@@ -71,6 +64,33 @@ def validate_password(password):
         return False, "Password must end with a number"
 
     return True, "Valid password"
+
+
+# ---------------------------
+# PASSWORD STRENGTH FUNCTION
+# ---------------------------
+def password_strength(password):
+    score = 0
+
+    if len(password) >= 6:
+        score += 1
+    if len(password) >= 10:
+        score += 1
+    if any(c.isupper() for c in password):
+        score += 1
+    if any(c.islower() for c in password):
+        score += 1
+    if any(c.isdigit() for c in password):
+        score += 1
+    if any(not c.isalnum() for c in password):
+        score += 1
+
+    if score <= 2:
+        return "Weak", 0.3, "red"
+    elif score <= 4:
+        return "Medium", 0.6, "orange"
+    else:
+        return "Strong", 1.0, "green"
 
 
 def load_users():
@@ -107,13 +127,27 @@ if st.session_state.username is None:
     u = st.text_input("Username")
     p = st.text_input("Password", type="password")
 
-    st.info("Password must start with capital letter, end with number, min 6 characters")
+    # ---------------------------
+    # PASSWORD STRENGTH UI
+    # ---------------------------
+    if p:
+        strength, percent, color = password_strength(p)
+
+        st.write(f"Password Strength: **{strength}**")
+        st.progress(percent)
+
+        if strength == "Weak":
+            st.error("Weak password")
+        elif strength == "Medium":
+            st.warning("Medium password")
+        else:
+            st.success("Strong password 💪")
+
+    st.info("Must start with capital letter, end with number, min 6 chars")
 
     if st.button(option):
 
-        # ---------------------------
         # CREATE ACCOUNT
-        # ---------------------------
         if option == "Create Account":
             if u and p:
 
@@ -130,15 +164,14 @@ if st.session_state.username is None:
                         "password": hash_password(p),
                         "registered_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
+
                     save_users(st.session_state.users)
                     st.success("Account created successfully!")
 
             else:
                 st.warning("Please fill all fields")
 
-        # ---------------------------
         # LOGIN
-        # ---------------------------
         if option == "Login":
 
             # ADMIN LOGIN
@@ -146,7 +179,7 @@ if st.session_state.username is None:
                 st.session_state.username = "admin"
                 st.rerun()
 
-            # USER LOGIN (hashed check)
+            # USER LOGIN
             elif u in st.session_state.users and st.session_state.users[u]["password"] == hash_password(p):
                 st.session_state.username = u
                 st.rerun()
@@ -189,16 +222,13 @@ if st.session_state.username == "admin":
 
         st.markdown("---")
 
-        # ---------------------------
-        # USER TABLE
-        # ---------------------------
         usernames = []
         passwords = []
         dates = []
 
         for username, data in users.items():
             usernames.append(username)
-            passwords.append(data["password"])  # hashed
+            passwords.append(data["password"])
             dates.append(data["registered_at"])
 
         st.subheader("📋 Registered Users")
@@ -254,6 +284,7 @@ if st.session_state.username == "admin":
 # ---------------------------
 else:
     st.markdown("---")
+   
  
   
 
