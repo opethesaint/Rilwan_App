@@ -11,25 +11,15 @@ import streamlit as st
 # Google Analytics tracking
 import streamlit as st
 import streamlit.components.v1 as components
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-RGM06M7XK0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-components.html("""
-<!DOCTYPE html>
-<html>
-<head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CTVTCNKBBB"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-CTVTCNKBBB', { 'anonymize_ip': true });
-  </script>
-</head>
-<body>
-</body>
-</html>
-""", height=0)
+  gtag('config', 'G-RGM06M7XK0');
+</script>
 
 
 
