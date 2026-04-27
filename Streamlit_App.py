@@ -34,6 +34,7 @@ import streamlit as st
 import json
 import os
 from datetime import datetime
+from collections import Counter
 
 st.set_page_config(page_title="Ayobami App")
 
@@ -81,28 +82,22 @@ if st.session_state.username is None:
 
     if st.button(option):
 
-        # ---------------------------
         # CREATE ACCOUNT
-        # ---------------------------
         if option == "Create Account":
             if u and p:
                 if u in st.session_state.users:
                     st.error("Username already exists")
                 else:
-                    # STORE PASSWORD + REGISTRATION TIME
                     st.session_state.users[u] = {
                         "password": p,
                         "registered_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
-
                     save_users(st.session_state.users)
                     st.success("Account created successfully!")
             else:
                 st.warning("Please fill all fields")
 
-        # ---------------------------
         # LOGIN
-        # ---------------------------
         if option == "Login":
 
             # ADMIN LOGIN
@@ -110,7 +105,7 @@ if st.session_state.username is None:
                 st.session_state.username = "admin"
                 st.rerun()
 
-            # NORMAL USER LOGIN
+            # USER LOGIN
             elif u in st.session_state.users and st.session_state.users[u]["password"] == p:
                 st.session_state.username = u
                 st.rerun()
@@ -138,7 +133,7 @@ st.success(f"Logged in as: {st.session_state.username}")
 
 
 # ---------------------------
-# ADMIN DASHBOARD (ANALYTICS)
+# ADMIN DASHBOARD
 # ---------------------------
 if st.session_state.username == "admin":
 
@@ -180,18 +175,39 @@ if st.session_state.username == "admin":
         )
 
         # ---------------------------
+        # DELETE USER (FIXED)
+        # ---------------------------
+        st.markdown("---")
+        st.subheader("🗑 Delete User")
+
+        user_to_delete = st.selectbox(
+            "Select user to delete",
+            options=[u for u in users.keys() if u != "admin"]
+        )
+
+        if st.button("Delete User"):
+            if user_to_delete in st.session_state.users:
+                del st.session_state.users[user_to_delete]
+                save_users(st.session_state.users)
+                st.success(f"Deleted {user_to_delete}")
+                st.rerun()
+
+        # ---------------------------
         # ANALYTICS
         # ---------------------------
         st.markdown("---")
         st.subheader("📊 Registration Analytics")
 
-        # Simple chart: registrations per day
-        from collections import Counter
-
-        days = [d.split(" ")[0] for d in dates]
-        daily_counts = Counter(days)
+        dates_list = [data["registered_at"].split(" ")[0] for data in users.values()]
+        daily_counts = Counter(dates_list)
 
         st.bar_chart(daily_counts)
+
+        # EXTRA INSIGHTS
+        st.markdown("### 🧠 Insights")
+
+        st.info(f"Earliest user: {min(dates)}")
+        st.info(f"Latest user: {max(dates)}")
 
     else:
         st.warning("No users registered yet.")
@@ -202,7 +218,11 @@ if st.session_state.username == "admin":
 # ---------------------------
 else:
     st.markdown("---")
- 
+  
+
+
+
+
 
 
 
