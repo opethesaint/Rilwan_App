@@ -3,8 +3,5 @@ matplotlib
 pandas
 numpy
 seaborn
-streamlit
-pandas
-matplotlib
-seaborn
+streamlit-analytics2
 streamlit-analytics2
