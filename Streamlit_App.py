@@ -30,6 +30,103 @@ components.html(CLARITY_CODE, height=0)
 
 
 ####
+import streamlit as st
+import json
+import os
+
+st.set_page_config(page_title="Ayobami App")
+
+# ---------------------------
+# FILE STORAGE
+# ---------------------------
+USER_FILE = "users.json"
+
+
+# ---------------------------
+# FUNCTIONS (IMPORTANT: MUST BE AT TOP)
+# ---------------------------
+def load_users():
+    if os.path.exists(USER_FILE):
+        with open(USER_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_users(users):
+    with open(USER_FILE, "w") as f:
+        json.dump(users, f)
+
+
+# ---------------------------
+# SESSION INIT
+# ---------------------------
+if "users" not in st.session_state:
+    st.session_state.users = load_users()
+
+if "username" not in st.session_state:
+    st.session_state.username = None
+
+
+# ---------------------------
+# LOGIN / CREATE ACCOUNT
+# ---------------------------
+if st.session_state.username is None:
+
+    st.title("🔐 Login / Create Account")
+
+    option = st.radio("Choose option", ["Login", "Create Account"])
+
+    u = st.text_input("Username")
+    p = st.text_input("Password", type="password")
+
+    if st.button(option):
+
+        # CREATE ACCOUNT
+        if option == "Create Account":
+            if u and p:
+                if u in st.session_state.users:
+                    st.error("Username already exists")
+                else:
+                    st.session_state.users[u] = p
+                    save_users(st.session_state.users)
+                    st.success("Account created successfully!")
+            else:
+                st.warning("Please fill all fields")
+
+        # LOGIN
+        if option == "Login":
+
+            # ADMIN LOGIN
+            if u == "admin" and p == "admin123":
+                st.session_state.username = "admin"
+                st.rerun()
+
+            # NORMAL USER LOGIN
+            elif u in st.session_state.users and st.session_state.users[u] == p:
+                st.session_state.username = u
+                st.rerun()
+
+            else:
+                st.error("Invalid login")
+
+    st.stop()
+
+
+# ---------------------------
+# HEADER
+# ---------------------------
+c1, c2 = st.columns([8, 1])
+
+with c1:
+    st.title("Welcome 🎉")
+
+with c2:
+    if st.button("Logout"):
+        st.session_state.username = None
+        st.rerun()
+
+st.success(f"Logged in as: {st.session_state.username}")
+
+
 # ---------------------------
 # ADMIN DASHBOARD
 # ---------------------------
@@ -41,9 +138,9 @@ if st.session_state.username == "admin":
     users = st.session_state.users
 
     if users:
+
         st.subheader("Registered Users")
 
-        # Show table
         st.dataframe(
             {
                 "Username": list(users.keys()),
@@ -55,22 +152,19 @@ if st.session_state.username == "admin":
         st.info(f"Total users: {len(users)}")
 
         # ---------------------------
-        # DELETE USER SECTION
+        # DELETE USER
         # ---------------------------
-        st.markdown("### 🗑 Delete a User")
+        st.markdown("### 🗑 Delete User")
 
         user_to_delete = st.selectbox(
-            "Select user to delete",
+            "Select user",
             options=list(users.keys())
         )
 
         if st.button("Delete User"):
             if user_to_delete in st.session_state.users:
 
-                # remove user
                 del st.session_state.users[user_to_delete]
-
-                # save to file
                 save_users(st.session_state.users)
 
                 st.success(f"User '{user_to_delete}' deleted successfully!")
@@ -78,6 +172,18 @@ if st.session_state.username == "admin":
 
     else:
         st.warning("No users registered yet.")
+
+
+# ---------------------------
+# NORMAL USER DASHBOARD
+# ---------------------------
+else:
+    st.markdown("---")
+    st.subheader("👤 User Dashboard")
+    st.write("Welcome! This is your app area.")
+
+
+
 
 
 
