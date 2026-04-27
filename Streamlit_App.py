@@ -33,6 +33,7 @@ components.html(CLARITY_CODE, height=0)
 import streamlit as st
 import json
 import os
+import hashlib
 from datetime import datetime
 from collections import Counter
 
@@ -47,11 +48,16 @@ USER_FILE = "users.json"
 # ---------------------------
 # FUNCTIONS
 # ---------------------------
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
 def load_users():
     if os.path.exists(USER_FILE):
         with open(USER_FILE, "r") as f:
             return json.load(f)
     return {}
+
 
 def save_users(users):
     with open(USER_FILE, "w") as f:
@@ -82,14 +88,16 @@ if st.session_state.username is None:
 
     if st.button(option):
 
-        # CREATE ACCOUNT
+        # ---------------------------
+        # CREATE ACCOUNT (HASH PASSWORD)
+        # ---------------------------
         if option == "Create Account":
             if u and p:
                 if u in st.session_state.users:
                     st.error("Username already exists")
                 else:
                     st.session_state.users[u] = {
-                        "password": p,
+                        "password": hash_password(p),
                         "registered_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
                     save_users(st.session_state.users)
@@ -97,16 +105,17 @@ if st.session_state.username is None:
             else:
                 st.warning("Please fill all fields")
 
-        # LOGIN
+        # ---------------------------
+        # LOGIN (CHECK HASHED PASSWORD)
+        # ---------------------------
         if option == "Login":
 
-            # ADMIN LOGIN
+            # ADMIN LOGIN (still plain for simplicity)
             if u == "admin" and p == "admin123":
                 st.session_state.username = "admin"
                 st.rerun()
 
-            # USER LOGIN
-            elif u in st.session_state.users and st.session_state.users[u]["password"] == p:
+            elif u in st.session_state.users and st.session_state.users[u]["password"] == hash_password(p):
                 st.session_state.username = u
                 st.rerun()
 
@@ -144,38 +153,32 @@ if st.session_state.username == "admin":
 
     if users:
 
-        # ---------------------------
-        # METRICS
-        # ---------------------------
         st.metric("Total Users", len(users))
 
         st.markdown("---")
 
-        # ---------------------------
-        # TABLE DATA
-        # ---------------------------
         usernames = []
         passwords = []
         dates = []
 
         for username, data in users.items():
             usernames.append(username)
-            passwords.append(data["password"])
+            passwords.append(data["password"])  # hashed now
             dates.append(data["registered_at"])
 
-        st.subheader("📋 Registered Users")
+        st.subheader("📋 Registered Users (Hashed Passwords)")
 
         st.dataframe(
             {
                 "Username": usernames,
-                "Password": passwords,
+                "Password (Hashed)": passwords,
                 "Registered At": dates
             },
             use_container_width=True
         )
 
         # ---------------------------
-        # DELETE USER (FIXED)
+        # DELETE USER
         # ---------------------------
         st.markdown("---")
         st.subheader("🗑 Delete User")
@@ -186,11 +189,10 @@ if st.session_state.username == "admin":
         )
 
         if st.button("Delete User"):
-            if user_to_delete in st.session_state.users:
-                del st.session_state.users[user_to_delete]
-                save_users(st.session_state.users)
-                st.success(f"Deleted {user_to_delete}")
-                st.rerun()
+            del st.session_state.users[user_to_delete]
+            save_users(st.session_state.users)
+            st.success(f"Deleted {user_to_delete}")
+            st.rerun()
 
         # ---------------------------
         # ANALYTICS
@@ -203,7 +205,6 @@ if st.session_state.username == "admin":
 
         st.bar_chart(daily_counts)
 
-        # EXTRA INSIGHTS
         st.markdown("### 🧠 Insights")
 
         st.info(f"Earliest user: {min(dates)}")
@@ -218,6 +219,7 @@ if st.session_state.username == "admin":
 # ---------------------------
 else:
     st.markdown("---")
+    
   
 
 
