@@ -85,14 +85,32 @@ if "username" not in st.session_state:
 if "last_active" not in st.session_state:
     st.session_state.last_active = {}
 
+if "last_seen" not in st.session_state:
+    st.session_state.last_seen = {}
+
 
 # ---------------------------
-# ONLINE STATUS
+# WHATSAPP PRESENCE SYSTEM
 # ---------------------------
-def is_online(username, timeout=60):
-    if username not in st.session_state.last_active:
-        return False
-    return (time.time() - st.session_state.last_active[username]) < timeout
+def update_presence(user):
+    now = time.time()
+    st.session_state.last_active[user] = now
+    st.session_state.last_seen[user] = now
+
+
+def get_presence(user):
+    if user not in st.session_state.last_active:
+        return "⚫ Offline", "Never seen"
+
+    last = st.session_state.last_active[user]
+    diff = time.time() - last
+
+    if diff < 60:
+        return "🟢 Online", "Active now"
+    elif diff < 300:
+        return "🟡 Away", f"Last seen {int(diff)}s ago"
+    else:
+        return "⚫ Offline", f"Last seen {int(diff)}s ago"
 
 
 # ---------------------------
@@ -130,13 +148,13 @@ if st.session_state.username is None:
             # ADMIN
             if u == "admin" and p == "admin123":
                 st.session_state.username = "admin"
-                st.session_state.last_active["admin"] = time.time()
+                update_presence("admin")
                 st.rerun()
 
             # USER
             elif u in st.session_state.users and st.session_state.users[u]["password"] == p:
                 st.session_state.username = u
-                st.session_state.last_active[u] = time.time()
+                update_presence(u)
                 st.rerun()
 
             else:
@@ -146,10 +164,10 @@ if st.session_state.username is None:
 
 
 # ---------------------------
-# HEARTBEAT (LIVE STATUS)
+# HEARTBEAT (LIVE ACTIVITY)
 # ---------------------------
 if st.session_state.username:
-    st.session_state.last_active[st.session_state.username] = time.time()
+    update_presence(st.session_state.username)
 
 
 # ---------------------------
@@ -169,12 +187,12 @@ st.success(f"Logged in as: {st.session_state.username}")
 
 
 # ---------------------------
-# ADMIN DASHBOARD
+# ADMIN DASHBOARD (PRESENCE + ANALYTICS)
 # ---------------------------
 if st.session_state.username == "admin":
 
     st.markdown("---")
-    st.header("🛠 Admin Dashboard")
+    st.header("🛠 Admin Dashboard (WhatsApp Presence System)")
 
     users = st.session_state.users
 
@@ -183,21 +201,31 @@ if st.session_state.username == "admin":
         st.metric("Total Users", len(users))
 
         # ---------------------------
-        # USERS TABLE
+        # USER STATUS TABLE
         # ---------------------------
-        st.subheader("📋 Users Overview")
+        st.subheader("👥 User Presence Status")
 
         rows = []
 
+        online_count = 0
+
         for username, data in users.items():
+
+            status, last_seen = get_presence(username)
+
+            if status == "🟢 Online":
+                online_count += 1
+
             rows.append({
                 "Username": username,
-                "Password": data["password"],
                 "Registered At": data["registered_at"],
-                "Status": "🟢 Online" if is_online(username) else "⚫ Offline"
+                "Status": status,
+                "Activity": last_seen
             })
 
         st.dataframe(rows, use_container_width=True)
+
+        st.success(f"🟢 Online Users: {online_count}")
 
         # ---------------------------
         # DELETE USER
@@ -217,19 +245,16 @@ if st.session_state.username == "admin":
             st.rerun()
 
         # ---------------------------
-        # CHAT MONITOR (ADMIN VIEW)
+        # CHAT MONITOR
         # ---------------------------
         st.markdown("---")
-        st.subheader("💬 All Chats (Admin View)")
+        st.subheader("💬 Chat Monitor")
 
-        if st.session_state.chat:
-            for msg in st.session_state.chat:
-                st.write(f"🧑 {msg['sender']} ➜ {msg['receiver']}: {msg['message']} ({msg['time']})")
-        else:
-            st.info("No messages yet.")
+        for msg in st.session_state.chat:
+            st.write(f"🧑 {msg['sender']} ➜ {msg['receiver']}: {msg['message']} ({msg['time']})")
 
     else:
-        st.warning("No users registered yet.")
+        st.warning("No users yet")
 
 
 # ---------------------------
@@ -238,7 +263,7 @@ if st.session_state.username == "admin":
 else:
 
     st.markdown("---")
-    st.subheader("💬 Live Chat System")
+    st.subheader("💬 Live Chat")
 
     users = list(st.session_state.users.keys())
 
@@ -279,8 +304,7 @@ else:
                     st.markdown(f"🔵 {msg['sender']}: {msg['message']} _({msg['time']})_")
 
     else:
-        st.info("No other users to chat with yet.")
-
+        st.info("No other users available")
 
 
 
