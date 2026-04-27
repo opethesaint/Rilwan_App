@@ -30,22 +30,21 @@ components.html(CLARITY_CODE, height=0)
 
 
 ####
-import streamlit as st
-import firebase_admin
-from firebase_admin import credentials, db
-import json
-
-# ---------- INIT FIREBASE ----------
-if not firebase_admin._apps:
-
-    cred_json = json.loads(st.secrets["firebase"]["service_account"])
-
-    cred = credentials.Certificate(cred_json)
-
-    firebase_admin.initialize_app(cred, {
-        "databaseURL": "https://YOUR_PROJECT.firebaseio.com/"
-    })
-
+[firebase]
+service_account = """
+{
+  "type": "service_account",
+  "project_id": "YOUR_PROJECT_ID",
+  "private_key_id": "xxxxx",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nXXXX\n-----END PRIVATE KEY-----\n",
+  "client_email": "xxxxx@xxxxx.iam.gserviceaccount.com",
+  "client_id": "xxxxx",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "xxxxx"
+}
+"""
 
 
 import streamlit as st
