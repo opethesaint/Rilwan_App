@@ -30,6 +30,26 @@ components.html(CLARITY_CODE, height=0)
 
 
 ####
+import streamlit as st
+
+st.title("Login Page")
+
+if "username" not in st.session_state:
+    username = st.text_input("Enter your name")
+
+    if st.button("Login"):
+        if username:
+            st.session_state.username = username
+            st.success(f"Welcome {username}")
+        else:
+            st.warning("Please enter a name")
+else:
+    st.success(f"You are logged in as {st.session_state.username}")
+
+    if st.button("Logout"):
+        del st.session_state.username
+
+
 
 
 
