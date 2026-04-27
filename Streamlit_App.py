@@ -29,7 +29,17 @@ components.html(CLARITY_CODE, height=0)
 
 
 
+####
+import streamlit as st
+import time
 
+if "visitors" not in st.session_state:
+    st.session_state.visitors = 0
+
+st.session_state.visitors += 1
+
+st.title("My App")
+st.write(f"👥 Active users (approx): {st.session_state.visitors}")
 
 
 
