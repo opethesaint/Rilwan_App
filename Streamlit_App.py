@@ -31,14 +31,12 @@ components.html(CLARITY_CODE, height=0)
 
 ####
 import streamlit as st
-
-st.set_page_config(page_title="Ayobami App")
+import streamlit as st
 
 # ---------------- LOGIN GATE ----------------
 if "username" not in st.session_state:
 
     st.title("🔒 Enter Your Username")
-
     username = st.text_input("Username")
 
     if st.button("Enter App"):
@@ -50,24 +48,19 @@ if "username" not in st.session_state:
 
     st.stop()
 
-# ---------------- MAIN APP ----------------
-st.title("Welcome to Ayobami App 🎉")
+# ---------------- TOP BAR ----------------
+col1, col2 = st.columns([8, 1])
 
+with col1:
+    st.title("Welcome to Ayobami App 🎉")
+
+with col2:
+    if st.button("🚪 Logout"):
+        del st.session_state.username
+        st.rerun()
+
+# ---------------- MAIN CONTENT ----------------
 st.success(f"Logged in as: {st.session_state.username}")
-
-# ---------------- DROPDOWN ----------------
-option = st.selectbox(
-    "Choose an option",
-    ["Dashboard", "Profile", "Settings", "Logout"]
-)
-
-st.write(f"You selected: {option}")
-
-# Optional logout
-if option == "Logout":
-    del st.session_state.username
-    st.rerun()
-
 
 
 
