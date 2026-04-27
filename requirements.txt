@@ -5,3 +5,5 @@ numpy
 seaborn
 streamlit-analytics2
 streamlit-analytics2
+streamlit
+firebase-admin
