@@ -33,44 +33,28 @@ components.html(CLARITY_CODE, height=0)
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, db
-import streamlit as st
-from firebase_admin import credentials
-cred = credentials.Certificate(dict(st.secrets["firebase"]))
-import uuid
-import atexit
 
 # ---------- INIT FIREBASE ----------
 if not firebase_admin._apps:
-    cred = credentials.Certificate("serviceAccountKey.json")
+
+    cred_dict = st.secrets["firebase"]
+
+    cred = credentials.Certificate({
+        "type": cred_dict["type"],
+        "project_id": cred_dict["project_id"],
+        "private_key_id": cred_dict["private_key_id"],
+        "private_key": cred_dict["private_key"].replace("\\n", "\n"),
+        "client_email": cred_dict["client_email"],
+        "client_id": cred_dict["client_id"],
+        "auth_uri": cred_dict["auth_uri"],
+        "token_uri": cred_dict["token_uri"],
+        "auth_provider_x509_cert_url": cred_dict["auth_provider_x509_cert_url"],
+        "client_x509_cert_url": cred_dict["client_x509_cert_url"]
+    })
+
     firebase_admin.initialize_app(cred, {
         "databaseURL": "https://YOUR_PROJECT.firebaseio.com/"
     })
-
-# ---------- USER ID ----------
-user_id = str(uuid.uuid4())
-
-ref = db.reference("active_users")
-
-# Add user when app loads
-ref.child(user_id).set(True)
-
-# ---------- REMOVE USER FUNCTION ----------
-def remove_user():
-    ref.child(user_id).delete()
-
-# 👇 THIS is where you add atexit
-atexit.register(remove_user)
-
-# ---------- UI ----------
-st.title("Live Users Counter")
-
-users = ref.get()
-count = len(users) if users else 0
-
-st.write(f"👥 Active users online: {count}")
-
-
-
 
 
 
