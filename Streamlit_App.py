@@ -47,13 +47,19 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def validate_password(password):
+    # Updated rules:
+    # - At least 6 characters
+    # - Starts with capital letter
+    # - Number no longer required
+
     if len(password) < 6:
         return False, "Password must be at least 6 characters"
+
     if not password[0].isupper():
         return False, "Password must start with a capital letter"
-    if not password[-1].isdigit():
-        return False, "Password must end with a number"
+
     return True, "OK"
+
 
 def password_strength(password):
     score = 0
@@ -78,18 +84,21 @@ def password_strength(password):
     else:
         return "Strong", 1.0
 
+
 def load_users():
     if os.path.exists(USER_FILE):
         with open(USER_FILE, "r") as f:
             return json.load(f)
     return {}
 
+
 def save_users(users):
     with open(USER_FILE, "w") as f:
         json.dump(users, f)
 
+
 # ---------------------------
-# SESSION STATE
+# SESSION
 # ---------------------------
 if "users" not in st.session_state:
     st.session_state.users = load_users()
@@ -97,8 +106,9 @@ if "users" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = None
 
+
 # ---------------------------
-# LOGIN / SIGNUP / FORGOT PASSWORD
+# AUTH PAGE
 # ---------------------------
 if st.session_state.username is None:
 
@@ -137,20 +147,33 @@ if st.session_state.username is None:
     # CREATE ACCOUNT
     # ---------------------------
     elif page == "Create Account":
+
         u = st.text_input("Username")
         p = st.text_input("Password", type="password")
-        recovery = st.text_input("Recovery Answer")
+
+        question = st.selectbox(
+            "Recovery Question",
+            [
+                "What is your favorite food?",
+                "What is your mother's first name?",
+                "What city were you born in?",
+                "What is your best friend's name?",
+                "What is your favorite color?"
+            ]
+        )
+
+        answer = st.text_input("Recovery Answer")
 
         if p:
             level, bar = password_strength(p)
             st.write(f"Password Strength: **{level}**")
             st.progress(bar)
 
-        st.info("Password rules: Start with capital letter, end with number, minimum 6 characters.")
+        st.info("Password rules: Start with capital letter, minimum 6 characters.")
 
         if st.button("Create Account", use_container_width=True):
 
-            if u and p and recovery:
+            if u and p and answer:
 
                 valid, msg = validate_password(p)
 
@@ -164,7 +187,8 @@ if st.session_state.username is None:
                     st.session_state.users[u] = {
                         "password": hash_password(p),
                         "plain_password": p,
-                        "recovery": recovery.lower(),
+                        "recovery_question": question,
+                        "recovery_answer": answer.lower().strip(),
                         "registered_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
 
@@ -180,21 +204,31 @@ if st.session_state.username is None:
     elif page == "Forgot Password":
 
         u = st.text_input("Username")
-        answer = st.text_input("Recovery Answer")
-        new_pass = st.text_input("New Password", type="password")
 
-        if new_pass:
-            level, bar = password_strength(new_pass)
-            st.write(f"New Password Strength: **{level}**")
-            st.progress(bar)
+        if u in st.session_state.users:
 
-        if st.button("Reset Password", use_container_width=True):
+            saved_question = st.session_state.users[u].get(
+                "recovery_question",
+                "No recovery question set"
+            )
 
-            if u in st.session_state.users:
+            st.info(f"Recovery Question: {saved_question}")
 
-                saved_recovery = st.session_state.users[u].get("recovery", "")
+            answer = st.text_input("Recovery Answer")
+            new_pass = st.text_input("New Password", type="password")
 
-                if answer.lower() == saved_recovery:
+            if new_pass:
+                level, bar = password_strength(new_pass)
+                st.write(f"New Password Strength: **{level}**")
+                st.progress(bar)
+
+            if st.button("Reset Password", use_container_width=True):
+
+                saved_answer = st.session_state.users[u].get(
+                    "recovery_answer", ""
+                )
+
+                if answer.lower().strip() == saved_answer:
 
                     valid, msg = validate_password(new_pass)
 
@@ -208,12 +242,14 @@ if st.session_state.username is None:
                         st.success("Password reset successful!")
 
                 else:
-                    st.error("Wrong recovery answer or no recovery set")
+                    st.error("Wrong recovery answer")
 
-            else:
-                st.error("Username not found")
+        else:
+            if u:
+                st.warning("Username not found")
 
     st.stop()
+
 
 # ---------------------------
 # HEADER
@@ -230,6 +266,7 @@ with col2:
 
 st.success(f"Logged in as: {st.session_state.username}")
 
+
 # ---------------------------
 # ADMIN DASHBOARD
 # ---------------------------
@@ -239,7 +276,6 @@ if st.session_state.username == "admin":
     st.header("🛠 Admin Dashboard")
 
     users = st.session_state.users
-
     st.metric("Total Users", len(users))
 
     if users:
@@ -249,6 +285,7 @@ if st.session_state.username == "admin":
             rows.append({
                 "Username": username,
                 "Real Password": data.get("plain_password", ""),
+                "Recovery Question": data.get("recovery_question", ""),
                 "Registered At": data.get("registered_at", "")
             })
 
@@ -256,8 +293,7 @@ if st.session_state.username == "admin":
 
         st.subheader("🗑 Delete User")
 
-        user_list = list(users.keys())
-        user_to_delete = st.selectbox("Select user", user_list)
+        user_to_delete = st.selectbox("Select user", list(users.keys()))
 
         if st.button("Delete User", use_container_width=True):
             del st.session_state.users[user_to_delete]
@@ -273,6 +309,7 @@ if st.session_state.username == "admin":
 # ---------------------------
 else:
     st.markdown("---")
+  
    
 
 
