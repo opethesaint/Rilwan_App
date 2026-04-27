@@ -31,14 +31,31 @@ components.html(CLARITY_CODE, height=0)
 
 ####
 import streamlit as st
+import json
+import os
 
 st.set_page_config(page_title="Ayobami App")
 
 # ---------------------------
-# SESSION STORAGE
+# FILE STORAGE SETUP
+# ---------------------------
+USER_FILE = "users.json"
+
+def load_users():
+    if os.path.exists(USER_FILE):
+        with open(USER_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_users(users):
+    with open(USER_FILE, "w") as f:
+        json.dump(users, f)
+
+# ---------------------------
+# SESSION INIT
 # ---------------------------
 if "users" not in st.session_state:
-    st.session_state.users = {}  # {username: password}
+    st.session_state.users = load_users()
 
 if "username" not in st.session_state:
     st.session_state.username = None
@@ -65,17 +82,20 @@ if st.session_state.username is None:
                     st.error("Username already exists")
                 else:
                     st.session_state.users[u] = p
+                    save_users(st.session_state.users)
                     st.success("Account created successfully!")
             else:
                 st.warning("Please fill all fields")
 
         # LOGIN
         if option == "Login":
+
             # ADMIN LOGIN
             if u == "admin" and p == "admin123":
                 st.session_state.username = "admin"
                 st.rerun()
 
+            # NORMAL USER LOGIN
             elif u in st.session_state.users and st.session_state.users[u] == p:
                 st.session_state.username = u
                 st.rerun()
@@ -87,7 +107,7 @@ if st.session_state.username is None:
 
 
 # ---------------------------
-# HEADER BAR
+# HEADER
 # ---------------------------
 c1, c2 = st.columns([8, 1])
 
@@ -98,7 +118,6 @@ with c2:
     if st.button("Logout"):
         st.session_state.username = None
         st.rerun()
-
 
 st.success(f"Logged in as: {st.session_state.username}")
 
@@ -111,32 +130,32 @@ if st.session_state.username == "admin":
     st.markdown("---")
     st.header("🛠 Admin Dashboard")
 
-    if st.session_state.users:
+    users = st.session_state.users
+
+    if users:
         st.subheader("Registered Users")
 
-        # Convert dict to table format
-        user_data = {
-            "Username": list(st.session_state.users.keys()),
-            "Password": list(st.session_state.users.values())
-        }
+        st.dataframe(
+            {
+                "Username": list(users.keys()),
+                "Password": list(users.values())
+            },
+            use_container_width=True
+        )
 
-        st.dataframe(user_data, use_container_width=True)
-
-        st.info(f"Total users: {len(st.session_state.users)}")
+        st.info(f"Total users: {len(users)}")
 
     else:
         st.warning("No users registered yet.")
 
 
 # ---------------------------
-# NORMAL USER DASHBOARD
+# USER DASHBOARD
 # ---------------------------
 else:
-    st.markdown("### 👤 User Dashboard")
-
-
-
-
+    st.markdown("---")
+    st.subheader("👤 User Dashboard")
+    st.write("Welcome to your dashboard. Your app content goes here.")
 
 
 
