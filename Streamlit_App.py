@@ -65,7 +65,7 @@ users = ref.get()
 count = len(users) if users else 0
 
 st.write(f"👥 Active users online: {count}")
-)
+
 
 
 
