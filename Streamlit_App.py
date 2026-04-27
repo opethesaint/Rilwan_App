@@ -1010,6 +1010,7 @@ import base64
 import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
+import streamlit.components.v1 as components
 
 # ===============================================================
 # CONFIGURATION
@@ -1331,21 +1332,23 @@ def open_chat_popup():
                 is_me = msg["from"] == username
                 is_deleted = msg.get("deleted", False)
 
-                # Build message HTML - FIXED: use unsafe_allow_html=True properly
-                edited = ""
+                # Build message HTML components separately
+                edited_text = ""
                 if msg.get("edited") and not is_deleted:
-                    edited = " <small style='opacity:0.6;'>(edited)</small>"
+                    edited_text = " <small style='opacity:0.6;'>(edited)</small>"
 
-                attachment = ""
+                # File/image
+                attachment_html = ""
                 if msg.get("file_data") and not is_deleted:
                     fd = msg["file_data"]
                     link = _chat_file_link(fd)
                     if msg["type"] == "image" and link:
-                        attachment = f'<br><img src="{link}" style="border-radius:8px;max-width:200px;margin-top:4px;" />'
+                        attachment_html = f'<br><img src="{link}" style="border-radius:8px;max-width:200px;margin-top:4px;" />'
                     elif link:
                         color = "white" if is_me else "#333"
-                        attachment = f'<br><div style="background:rgba(255,255,255,0.2);border-radius:6px;padding:4px 8px;margin-top:4px;font-size:0.85rem;">📎 <a href="{link}" download="{fd["original_name"]}" style="color:{color};text-decoration:underline;">{fd["original_name"]} ({fd["size_mb"]} MB)</a></div>'
+                        attachment_html = f'<br><div style="background:rgba(255,255,255,0.2);border-radius:6px;padding:4px 8px;margin-top:4px;font-size:0.85rem;">📎 <a href="{link}" download="{fd["original_name"]}" style="color:{color};text-decoration:underline;">{fd["original_name"]} ({fd["size_mb"]} MB)</a></div>'
 
+                # Reactions
                 reactions_html = ""
                 if not is_deleted:
                     r = _chat_get_reactions(msg["id"])
@@ -1358,14 +1361,14 @@ def open_chat_popup():
                         align = "flex-end" if is_me else "flex-start"
                         reactions_html = f'<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:{align};margin-top:4px;">{"".join(badges)}</div>'
 
-                # FIXED: Build read receipt separately and render with markdown
+                # Read receipt
                 read_html = ""
                 if is_me and not is_deleted:
                     by = _chat_read_status(msg["id"])
                     if chat_with == "global":
                         cnt = len([u for u in by if u != username])
                         if cnt > 0:
-                            read_html = f'<div style="font-size:0.65rem;color:#90EE90;margin-top:2px;">✓✓ Read by {cnt}</div>'
+                            read_html = '<div style="font-size:0.65rem;color:#90EE90;margin-top:2px;">✓✓ Read by ' + str(cnt) + '</div>'
                         else:
                             read_html = '<div style="font-size:0.65rem;color:#ccc;margin-top:2px;">✓ Sent</div>'
                     else:
@@ -1374,22 +1377,34 @@ def open_chat_popup():
                         else:
                             read_html = '<div style="font-size:0.65rem;color:#ccc;margin-top:2px;">✓ Sent</div>'
 
-                bg = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" if is_me else "#f0f2f6"
-                color = "white" if is_me else "#333"
-                align = "margin-left:auto;text-align:right;" if is_me else "margin-right:auto;text-align:left;"
-                opacity = "opacity:0.6;font-style:italic;" if is_deleted else ""
+                # Message bubble styling
+                if is_me:
+                    bg = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                    color = "white"
+                    align = "margin-left:auto;text-align:right;"
+                else:
+                    bg = "#f0f2f6"
+                    color = "#333"
+                    align = "margin-right:auto;text-align:left;"
 
-                # FIXED: Render the entire message as one HTML block with unsafe_allow_html=True
-                full_html = f"""<div style="background:{bg};color:{color};padding:0.7rem 1rem;border-radius:1rem;margin:0.4rem 0;max-width:78%;word-wrap:break-word;{align}{opacity}">
+                if is_deleted:
+                    opacity = "opacity:0.6;font-style:italic;"
+                else:
+                    opacity = ""
+
+                # FIXED: Use components.html for proper HTML rendering
+                # Build complete HTML for this message
+                message_html = f"""<div style="background:{bg};color:{color};padding:0.7rem 1rem;border-radius:1rem;margin:0.4rem 0;max-width:78%;word-wrap:break-word;{align}{opacity}">
                     <small><b>{msg["from"]}</b> · {msg["time"]}</small><br>
-                    {msg["text"]}{edited}
-                    {attachment}
+                    {msg["text"]}{edited_text}
+                    {attachment_html}
                     {reactions_html}
                     {read_html}
                 </div>
                 <div style="clear:both;"></div>"""
 
-                st.markdown(full_html, unsafe_allow_html=True)
+                # Use components.html with height=0 for inline rendering
+                components.html(message_html, height=0, scrolling=False)
 
                 # Action buttons
                 if not is_deleted:
@@ -1506,8 +1521,6 @@ if online_count > 0:
             if st.button(f"💬 {u}", key=f"qc_{u}"):
                 st.session_state.chat_current = u
                 open_chat_popup()
-
-
 
 
 
