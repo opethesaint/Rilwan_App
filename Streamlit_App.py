@@ -37,7 +37,7 @@ st.set_page_config(page_title="Ayobami App")
 # ---------------- LOGIN GATE ----------------
 if "username" not in st.session_state:
 
-    st.title("🔒 Enter Your Username to Continue")
+    st.title("🔒 Enter Your Username")
 
     username = st.text_input("Username")
 
@@ -48,11 +48,27 @@ if "username" not in st.session_state:
         else:
             st.warning("Please enter a username")
 
-    st.stop()  # 🔒 blocks rest of app
+    st.stop()
 
 # ---------------- MAIN APP ----------------
 st.title("Welcome to Ayobami App 🎉")
-st.write(f"Logged in as: {st.session_state.username}")
+
+st.success(f"Logged in as: {st.session_state.username}")
+
+# ---------------- DROPDOWN ----------------
+option = st.selectbox(
+    "Choose an option",
+    ["Dashboard", "Profile", "Settings", "Logout"]
+)
+
+st.write(f"You selected: {option}")
+
+# Optional logout
+if option == "Logout":
+    del st.session_state.username
+    st.rerun()
+
+
 
 
 
