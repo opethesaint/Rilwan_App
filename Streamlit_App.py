@@ -36,15 +36,14 @@ from firebase_admin import credentials
 
 if not firebase_admin._apps:
 
-    cred_dict = st.secrets["firebase"]["service_account"]
-
-    # Convert TOML string → Python dict safely
-    import json
-    cred = credentials.Certificate(json.loads(cred_dict))
+    cred = credentials.Certificate(
+        st.secrets["firebase"]["service_account"]
+    )
 
     firebase_admin.initialize_app(cred, {
         "databaseURL": "https://YOUR_PROJECT.firebaseio.com/"
     })
+
 
 
 
