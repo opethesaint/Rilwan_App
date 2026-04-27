@@ -51,6 +51,7 @@ if "username" not in st.session_state:
     st.stop()  # 🔒 blocks rest of app
 
 # ---------------- MAIN APP ----------------
+st.title("Welcome to Ayobami App 🎉")
 st.write(f"Logged in as: {st.session_state.username}")
 
 
