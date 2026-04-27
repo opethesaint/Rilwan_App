@@ -31,35 +31,108 @@ components.html(CLARITY_CODE, height=0)
 
 ####
 import streamlit as st
+
 st.set_page_config(page_title="Ayobami App")
 
-if "users" not in st.session_state: st.session_state.users = {}
+# ---------------------------
+# SESSION STORAGE
+# ---------------------------
+if "users" not in st.session_state:
+    st.session_state.users = {}  # {username: password}
+
 if "username" not in st.session_state:
+    st.session_state.username = None
+
+
+# ---------------------------
+# LOGIN / SIGNUP PAGE
+# ---------------------------
+if st.session_state.username is None:
 
     st.title("🔐 Login / Create Account")
+
     option = st.radio("Choose option", ["Login", "Create Account"])
-    u = st.text_input("Username"); p = st.text_input("Password", type="password")
+
+    u = st.text_input("Username")
+    p = st.text_input("Password", type="password")
 
     if st.button(option):
+
+        # CREATE ACCOUNT
         if option == "Create Account":
             if u and p:
-                if u in st.session_state.users: st.error("Username exists")
-                else: st.session_state.users[u] = p; st.success("Created!")
-            else: st.warning("Fill all fields")
+                if u in st.session_state.users:
+                    st.error("Username already exists")
+                else:
+                    st.session_state.users[u] = p
+                    st.success("Account created successfully!")
+            else:
+                st.warning("Please fill all fields")
 
+        # LOGIN
         if option == "Login":
-            if u in st.session_state.users and st.session_state.users[u] == p:
-                st.session_state.username = u; st.rerun()
-            else: st.error("Invalid login")
+            # ADMIN LOGIN
+            if u == "admin" and p == "admin123":
+                st.session_state.username = "admin"
+                st.rerun()
+
+            elif u in st.session_state.users and st.session_state.users[u] == p:
+                st.session_state.username = u
+                st.rerun()
+
+            else:
+                st.error("Invalid login")
 
     st.stop()
 
-c1, c2 = st.columns([8,1])
-with c1: st.title("Welcome 🎉")
+
+# ---------------------------
+# HEADER BAR
+# ---------------------------
+c1, c2 = st.columns([8, 1])
+
+with c1:
+    st.title("Welcome 🎉")
+
 with c2:
-    if st.button("Logout"): del st.session_state.username; st.rerun()
+    if st.button("Logout"):
+        st.session_state.username = None
+        st.rerun()
+
 
 st.success(f"Logged in as: {st.session_state.username}")
+
+
+# ---------------------------
+# ADMIN DASHBOARD
+# ---------------------------
+if st.session_state.username == "admin":
+
+    st.markdown("---")
+    st.header("🛠 Admin Dashboard")
+
+    if st.session_state.users:
+        st.subheader("Registered Users")
+
+        # Convert dict to table format
+        user_data = {
+            "Username": list(st.session_state.users.keys()),
+            "Password": list(st.session_state.users.values())
+        }
+
+        st.dataframe(user_data, use_container_width=True)
+
+        st.info(f"Total users: {len(st.session_state.users)}")
+
+    else:
+        st.warning("No users registered yet.")
+
+
+# ---------------------------
+# NORMAL USER DASHBOARD
+# ---------------------------
+else:
+    st.markdown("### 👤 User Dashboard")
 
 
 
