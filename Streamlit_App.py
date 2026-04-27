@@ -31,35 +31,75 @@ components.html(CLARITY_CODE, height=0)
 
 ####
 import streamlit as st
+import smtplib
+from email.mime.text import MIMEText
+
 st.set_page_config(page_title="Ayobami App")
 
-if "users" not in st.session_state: st.session_state.users = {}
+# ---------------- EMAIL FUNCTION ----------------
+def send_login_email(username):
+    msg = MIMEText(f"🔔 New login detected:\nUser: {username}")
+    msg["Subject"] = "Ayobami App Login Alert"
+    msg["From"] = st.secrets["EMAIL"]
+    msg["To"] = st.secrets["RECEIVER"]
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(st.secrets["opethesaint@gmail.com"], st.secrets["lofevlbskhzcvfde"])
+        server.send_message(msg)
+
+# ---------------- STORE USERS ----------------
+if "users" not in st.session_state:
+    st.session_state.users = {}
+
+# ---------------- LOGIN CHECK ----------------
 if "username" not in st.session_state:
 
     st.title("🔐 Login / Create Account")
     option = st.radio("Choose option", ["Login", "Create Account"])
-    u = st.text_input("Username"); p = st.text_input("Password", type="password")
+    u = st.text_input("Username")
+    p = st.text_input("Password", type="password")
 
     if st.button(option):
+
+        # ---------------- CREATE ACCOUNT ----------------
         if option == "Create Account":
             if u and p:
-                if u in st.session_state.users: st.error("Username exists")
-                else: st.session_state.users[u] = p; st.success("Created!")
-            else: st.warning("Fill all fields")
+                if u in st.session_state.users:
+                    st.error("Username exists")
+                else:
+                    st.session_state.users[u] = p
+                    st.success("Account created!")
+            else:
+                st.warning("Fill all fields")
 
+        # ---------------- LOGIN ----------------
         if option == "Login":
             if u in st.session_state.users and st.session_state.users[u] == p:
-                st.session_state.username = u; st.rerun()
-            else: st.error("Invalid login")
+                st.session_state.username = u
+
+                # 🔥 EMAIL NOTIFICATION HERE
+                send_login_email(u)
+
+                st.rerun()
+            else:
+                st.error("Invalid login")
 
     st.stop()
 
+# ---------------- MAIN APP ----------------
 c1, c2 = st.columns([8,1])
-with c1: st.title("Welcome 🎉")
+
+with c1:
+    st.title("Welcome 🎉")
+
 with c2:
-    if st.button("Logout"): del st.session_state.username; st.rerun()
+    if st.button("Logout"):
+        del st.session_state.username
+        st.rerun()
 
 st.success(f"Logged in as: {st.session_state.username}")
+
+
 
 
 
