@@ -999,7 +999,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 ##########
-#########
 # ═══════════════════════════════════════════════════════════════
 # PASTE THIS ENTIRE BLOCK INTO YOUR EXISTING app.py
 # Place it AFTER your login code (where users are already authenticated)
@@ -1500,6 +1499,8 @@ if online_count > 0:
             if st.button(f"💬 {u}", key=f"qc_{u}"):
                 st.session_state.chat_current = u
                 open_chat_popup()  # ← OPENS POPUP WITH THAT USER!
+#########
+
 
 
 
