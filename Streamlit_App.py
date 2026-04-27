@@ -31,12 +31,37 @@ components.html(CLARITY_CODE, height=0)
 
 ####
 import streamlit as st
-import streamlit as st 
-st.set_page_config(page_title="Ayobami App") 
-# ---------------- STORE USERS (TEMPORARY) ----------------
-if "users" not in st.session_state: st.session_state.users = {} 
-# {username: password} # ---------------- LOGIN STATE ---------------- 
-if "username" not in st.session_state: st.title("🔐 Login / Create Account") option = st.radio("Choose option", ["Login", "Create Account"]) username = st.text_input("Username") password = st.text_input("Password", type="password") # ---------------- CREATE ACCOUNT ---------------- if option == "Create Account": if st.button("Create Account"): if username and password: if username in st.session_state.users: st.error("Username already exists") else: st.session_state.users[username] = password st.success("Account created! Now login.") else: st.warning("Fill all fields") # ---------------- LOGIN ---------------- if option == "Login": if st.button("Login"): if username in st.session_state.users and st.session_state.users[username] == password: st.session_state.username = username st.rerun() else: st.error("Invalid username or password") st.stop() # ---------------- MAIN APP ---------------- col1, col2 = st.columns([8, 1]) with col1: st.title("Welcome to Ayobami App 🎉") with col2: if st.button("🚪 Logout"): del st.session_state.username st.rerun() st.success(f"Logged in as: {st.session_state.username}")
+st.set_page_config(page_title="Ayobami App")
+
+if "users" not in st.session_state: st.session_state.users = {}
+if "username" not in st.session_state:
+
+    st.title("🔐 Login / Create Account")
+    option = st.radio("Choose option", ["Login", "Create Account"])
+    u = st.text_input("Username"); p = st.text_input("Password", type="password")
+
+    if st.button(option):
+        if option == "Create Account":
+            if u and p:
+                if u in st.session_state.users: st.error("Username exists")
+                else: st.session_state.users[u] = p; st.success("Created!")
+            else: st.warning("Fill all fields")
+
+        if option == "Login":
+            if u in st.session_state.users and st.session_state.users[u] == p:
+                st.session_state.username = u; st.rerun()
+            else: st.error("Invalid login")
+
+    st.stop()
+
+c1, c2 = st.columns([8,1])
+with c1: st.title("Welcome 🎉")
+with c2:
+    if st.button("Logout"): del st.session_state.username; st.rerun()
+
+st.success(f"Logged in as: {st.session_state.username}")
+
+
 
 
 
