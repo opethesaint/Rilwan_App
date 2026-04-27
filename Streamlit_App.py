@@ -1010,6 +1010,23 @@ import base64
 import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
+import html   # <-- add this at the top with other imports
+
+...
+
+# Inside the message rendering loop:
+safe_text = html.escape(msg["text"])  # escape user input
+
+# FIXED: Render the entire message as one HTML block with unsafe_allow_html=True
+full_html = f"""<div style="background:{bg};color:{color};padding:0.7rem 1rem;border-radius:1rem;margin:0.4rem 0;max-width:78%;word-wrap:break-word;{align}{opacity}">
+    <small><b>{msg["from"]}</b> · {msg["time"]}</small><br>
+    {safe_text}{edited}
+    {attachment}
+    {reactions_html}
+    {read_html}
+</div>
+<div style="clear:both;"></div>"""
+
 
 # ===============================================================
 # CONFIGURATION
