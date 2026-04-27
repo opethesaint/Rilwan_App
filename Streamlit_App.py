@@ -33,17 +33,15 @@ components.html(CLARITY_CODE, height=0)
 import streamlit as st
 import json
 import os
-import time
 from datetime import datetime
 from collections import Counter
 
 st.set_page_config(page_title="Ayobami App")
 
 # ---------------------------
-# FILES
+# FILE STORAGE
 # ---------------------------
 USER_FILE = "users.json"
-CHAT_FILE = "chat.json"
 
 
 # ---------------------------
@@ -59,16 +57,6 @@ def save_users(users):
     with open(USER_FILE, "w") as f:
         json.dump(users, f)
 
-def load_chat():
-    if os.path.exists(CHAT_FILE):
-        with open(CHAT_FILE, "r") as f:
-            return json.load(f)
-    return []
-
-def save_chat(chat):
-    with open(CHAT_FILE, "w") as f:
-        json.dump(chat, f)
-
 
 # ---------------------------
 # SESSION INIT
@@ -76,41 +64,8 @@ def save_chat(chat):
 if "users" not in st.session_state:
     st.session_state.users = load_users()
 
-if "chat" not in st.session_state:
-    st.session_state.chat = load_chat()
-
 if "username" not in st.session_state:
     st.session_state.username = None
-
-if "last_active" not in st.session_state:
-    st.session_state.last_active = {}
-
-if "last_seen" not in st.session_state:
-    st.session_state.last_seen = {}
-
-
-# ---------------------------
-# WHATSAPP PRESENCE SYSTEM
-# ---------------------------
-def update_presence(user):
-    now = time.time()
-    st.session_state.last_active[user] = now
-    st.session_state.last_seen[user] = now
-
-
-def get_presence(user):
-    if user not in st.session_state.last_active:
-        return "⚫ Offline", "Never seen"
-
-    last = st.session_state.last_active[user]
-    diff = time.time() - last
-
-    if diff < 60:
-        return "🟢 Online", "Active now"
-    elif diff < 300:
-        return "🟡 Away", f"Last seen {int(diff)}s ago"
-    else:
-        return "⚫ Offline", f"Last seen {int(diff)}s ago"
 
 
 # ---------------------------
@@ -140,34 +95,25 @@ if st.session_state.username is None:
                     save_users(st.session_state.users)
                     st.success("Account created successfully!")
             else:
-                st.warning("Fill all fields")
+                st.warning("Please fill all fields")
 
         # LOGIN
         if option == "Login":
 
-            # ADMIN
+            # ADMIN LOGIN
             if u == "admin" and p == "admin123":
                 st.session_state.username = "admin"
-                update_presence("admin")
                 st.rerun()
 
-            # USER
+            # USER LOGIN
             elif u in st.session_state.users and st.session_state.users[u]["password"] == p:
                 st.session_state.username = u
-                update_presence(u)
                 st.rerun()
 
             else:
                 st.error("Invalid login")
 
     st.stop()
-
-
-# ---------------------------
-# HEARTBEAT (LIVE ACTIVITY)
-# ---------------------------
-if st.session_state.username:
-    update_presence(st.session_state.username)
 
 
 # ---------------------------
@@ -187,124 +133,92 @@ st.success(f"Logged in as: {st.session_state.username}")
 
 
 # ---------------------------
-# ADMIN DASHBOARD (PRESENCE + ANALYTICS)
+# ADMIN DASHBOARD
 # ---------------------------
 if st.session_state.username == "admin":
 
     st.markdown("---")
-    st.header("🛠 Admin Dashboard (WhatsApp Presence System)")
+    st.header("🛠 Admin Analytics Dashboard")
 
     users = st.session_state.users
 
     if users:
 
+        # ---------------------------
+        # METRICS
+        # ---------------------------
         st.metric("Total Users", len(users))
 
-        # ---------------------------
-        # USER STATUS TABLE
-        # ---------------------------
-        st.subheader("👥 User Presence Status")
+        st.markdown("---")
 
-        rows = []
-
-        online_count = 0
+        # ---------------------------
+        # TABLE DATA
+        # ---------------------------
+        usernames = []
+        passwords = []
+        dates = []
 
         for username, data in users.items():
+            usernames.append(username)
+            passwords.append(data["password"])
+            dates.append(data["registered_at"])
 
-            status, last_seen = get_presence(username)
+        st.subheader("📋 Registered Users")
 
-            if status == "🟢 Online":
-                online_count += 1
-
-            rows.append({
-                "Username": username,
-                "Registered At": data["registered_at"],
-                "Status": status,
-                "Activity": last_seen
-            })
-
-        st.dataframe(rows, use_container_width=True)
-
-        st.success(f"🟢 Online Users: {online_count}")
+        st.dataframe(
+            {
+                "Username": usernames,
+                "Password": passwords,
+                "Registered At": dates
+            },
+            use_container_width=True
+        )
 
         # ---------------------------
-        # DELETE USER
+        # DELETE USER (FIXED)
         # ---------------------------
         st.markdown("---")
         st.subheader("🗑 Delete User")
 
         user_to_delete = st.selectbox(
-            "Select user",
+            "Select user to delete",
             options=[u for u in users.keys() if u != "admin"]
         )
 
         if st.button("Delete User"):
-            del st.session_state.users[user_to_delete]
-            save_users(st.session_state.users)
-            st.success("User deleted")
-            st.rerun()
-
-        # ---------------------------
-        # CHAT MONITOR
-        # ---------------------------
-        st.markdown("---")
-        st.subheader("💬 Chat Monitor")
-
-        for msg in st.session_state.chat:
-            st.write(f"🧑 {msg['sender']} ➜ {msg['receiver']}: {msg['message']} ({msg['time']})")
-
-    else:
-        st.warning("No users yet")
-
-
-# ---------------------------
-# USER DASHBOARD + CHAT
-# ---------------------------
-else:
-
-    st.markdown("---")
-    st.subheader("💬 Live Chat")
-
-    users = list(st.session_state.users.keys())
-
-    if len(users) > 1:
-
-        receiver = st.selectbox(
-            "Chat with:",
-            [u for u in users if u != st.session_state.username]
-        )
-
-        message = st.text_input("Type message")
-
-        if st.button("Send"):
-            if message:
-
-                st.session_state.chat.append({
-                    "sender": st.session_state.username,
-                    "receiver": receiver,
-                    "message": message,
-                    "time": datetime.now().strftime("%H:%M:%S")
-                })
-
-                save_chat(st.session_state.chat)
+            if user_to_delete in st.session_state.users:
+                del st.session_state.users[user_to_delete]
+                save_users(st.session_state.users)
+                st.success(f"Deleted {user_to_delete}")
                 st.rerun()
 
+        # ---------------------------
+        # ANALYTICS
+        # ---------------------------
         st.markdown("---")
-        st.subheader("📩 Conversation")
+        st.subheader("📊 Registration Analytics")
 
-        for msg in st.session_state.chat:
-            if (
-                (msg["sender"] == st.session_state.username and msg["receiver"] == receiver)
-                or
-                (msg["sender"] == receiver and msg["receiver"] == st.session_state.username)
-            ):
-                if msg["sender"] == st.session_state.username:
-                    st.markdown(f"🟢 You: {msg['message']} _({msg['time']})_")
-                else:
-                    st.markdown(f"🔵 {msg['sender']}: {msg['message']} _({msg['time']})_")
+        dates_list = [data["registered_at"].split(" ")[0] for data in users.values()]
+        daily_counts = Counter(dates_list)
+
+        st.bar_chart(daily_counts)
+
+        # EXTRA INSIGHTS
+        st.markdown("### 🧠 Insights")
+
+        st.info(f"Earliest user: {min(dates)}")
+        st.info(f"Latest user: {max(dates)}")
 
     else:
-        st.info("No other users available")
+        st.warning("No users registered yet.")
+
+
+# ---------------------------
+# USER DASHBOARD
+# ---------------------------
+else:
+    st.markdown("---")
+  
 
 
 
