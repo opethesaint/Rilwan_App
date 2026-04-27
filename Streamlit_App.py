@@ -224,8 +224,7 @@ if st.session_state.username == "admin":
 # ---------------------------
 else:
     st.markdown("---")
-    st.subheader("👤 User Dashboard")
-    st.write("Welcome to your app area.")
+  
 
 
 
