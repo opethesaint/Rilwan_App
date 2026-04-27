@@ -15,26 +15,27 @@ import streamlit.components.v1 as components
 
 import streamlit as st
 import streamlit.components.v1 as components
+import streamlit as st
 
-# Google Analytics Code
-GA_CODE = """
+st.set_page_config(page_title="My App", layout="wide")
+
+# Google Analytics Tag
+st.markdown("""
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-RGM06M7XK0"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-RGM06M7XK0');
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-RGM06M7XK0');
 </script>
-"""
+""", unsafe_allow_html=True)
 
-# Inject into Streamlit app
-components.html(GA_CODE, height=0)
-
-# Your app starts here
 st.title("My Streamlit App")
-st.write("Welcome!")
+
+
+
+
 
 
 
