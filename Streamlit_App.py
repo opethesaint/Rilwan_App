@@ -1014,7 +1014,7 @@ from datetime import datetime, timedelta
     # Messages
 messages = _chat_get_msgs(username, chat_with)
 
-    container = st.container(height=350)
+container = st.container(height=350)
     with container:
         if not messages:
             st.info("No messages yet. Say hello! 👋")
