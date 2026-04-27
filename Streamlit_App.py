@@ -1012,7 +1012,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 
     # Messages
-    messages = _chat_get_msgs(username, chat_with)
+messages = _chat_get_msgs(username, chat_with)
 
     container = st.container(height=350)
     with container:
