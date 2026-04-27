@@ -31,15 +31,43 @@ components.html(CLARITY_CODE, height=0)
 
 ####
 import streamlit as st
-import time
+import firebase_admin
+from firebase_admin import credentials, db
+import uuid
+import atexit
 
-if "visitors" not in st.session_state:
-    st.session_state.visitors = 0
+# ---------- INIT FIREBASE ----------
+if not firebase_admin._apps:
+    cred = credentials.Certificate("serviceAccountKey.json")
+    firebase_admin.initialize_app(cred, {
+        "databaseURL": "https://YOUR_PROJECT.firebaseio.com/"
+    })
 
-st.session_state.visitors += 1
+# ---------- USER ID ----------
+user_id = str(uuid.uuid4())
 
-st.title("My App")
-st.write(f"👥 Active users (approx): {st.session_state.visitors}")
+ref = db.reference("active_users")
+
+# Add user when app loads
+ref.child(user_id).set(True)
+
+# ---------- REMOVE USER FUNCTION ----------
+def remove_user():
+    ref.child(user_id).delete()
+
+# 👇 THIS is where you add atexit
+atexit.register(remove_user)
+
+# ---------- UI ----------
+st.title("Live Users Counter")
+
+users = ref.get()
+count = len(users) if users else 0
+
+st.write(f"👥 Active users online: {count}")
+)
+
+
 
 
 
