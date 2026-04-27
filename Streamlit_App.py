@@ -36,7 +36,7 @@ import os
 import hashlib
 from datetime import datetime
 
-st.set_page_config(page_title="Ayobami App")
+st.set_page_config(page_title="Ayobami App", layout="wide")
 
 USER_FILE = "users.json"
 
@@ -50,10 +50,33 @@ def validate_password(password):
     if len(password) < 6:
         return False, "Password must be at least 6 characters"
     if not password[0].isupper():
-        return False, "Password must start with capital letter"
+        return False, "Password must start with a capital letter"
     if not password[-1].isdigit():
-        return False, "Password must end with number"
+        return False, "Password must end with a number"
     return True, "OK"
+
+def password_strength(password):
+    score = 0
+
+    if len(password) >= 6:
+        score += 1
+    if len(password) >= 10:
+        score += 1
+    if any(c.isupper() for c in password):
+        score += 1
+    if any(c.islower() for c in password):
+        score += 1
+    if any(c.isdigit() for c in password):
+        score += 1
+    if any(not c.isalnum() for c in password):
+        score += 1
+
+    if score <= 2:
+        return "Weak", 0.33
+    elif score <= 4:
+        return "Medium", 0.66
+    else:
+        return "Strong", 1.0
 
 def load_users():
     if os.path.exists(USER_FILE):
@@ -66,7 +89,7 @@ def save_users(users):
         json.dump(users, f)
 
 # ---------------------------
-# SESSION
+# SESSION STATE
 # ---------------------------
 if "users" not in st.session_state:
     st.session_state.users = load_users()
@@ -75,24 +98,57 @@ if "username" not in st.session_state:
     st.session_state.username = None
 
 # ---------------------------
-# AUTH PAGE
+# LOGIN / SIGNUP / FORGOT PASSWORD
 # ---------------------------
 if st.session_state.username is None:
 
-    st.title("🔐 Login System")
+    st.title("🔐 Ayobami Authentication System")
 
-    page = st.radio("Choose option", ["Login", "Create Account", "Forgot Password"])
+    page = st.radio(
+        "Choose option",
+        ["Login", "Create Account", "Forgot Password"],
+        horizontal=True
+    )
+
+    # ---------------------------
+    # LOGIN
+    # ---------------------------
+    if page == "Login":
+        u = st.text_input("Username")
+        p = st.text_input("Password", type="password")
+
+        if st.button("Login", use_container_width=True):
+
+            if u == "admin" and p == "admin123":
+                st.session_state.username = "admin"
+                st.rerun()
+
+            elif (
+                u in st.session_state.users and
+                st.session_state.users[u]["password"] == hash_password(p)
+            ):
+                st.session_state.username = u
+                st.rerun()
+
+            else:
+                st.error("Invalid login")
 
     # ---------------------------
     # CREATE ACCOUNT
     # ---------------------------
-    if page == "Create Account":
-
+    elif page == "Create Account":
         u = st.text_input("Username")
         p = st.text_input("Password", type="password")
         recovery = st.text_input("Recovery Answer")
 
-        if st.button("Create Account"):
+        if p:
+            level, bar = password_strength(p)
+            st.write(f"Password Strength: **{level}**")
+            st.progress(bar)
+
+        st.info("Password rules: Start with capital letter, end with number, minimum 6 characters.")
+
+        if st.button("Create Account", use_container_width=True):
 
             if u and p and recovery:
 
@@ -113,31 +169,10 @@ if st.session_state.username is None:
                     }
 
                     save_users(st.session_state.users)
-                    st.success("Account created!")
+                    st.success("Account created successfully!")
 
             else:
-                st.warning("Fill all fields")
-
-    # ---------------------------
-    # LOGIN
-    # ---------------------------
-    elif page == "Login":
-
-        u = st.text_input("Username")
-        p = st.text_input("Password", type="password")
-
-        if st.button("Login"):
-
-            if u == "admin" and p == "admin123":
-                st.session_state.username = "admin"
-                st.rerun()
-
-            elif u in st.session_state.users and st.session_state.users[u]["password"] == hash_password(p):
-                st.session_state.username = u
-                st.rerun()
-
-            else:
-                st.error("Invalid login")
+                st.warning("Please fill all fields")
 
     # ---------------------------
     # FORGOT PASSWORD
@@ -145,15 +180,21 @@ if st.session_state.username is None:
     elif page == "Forgot Password":
 
         u = st.text_input("Username")
+        answer = st.text_input("Recovery Answer")
+        new_pass = st.text_input("New Password", type="password")
 
-        if u in st.session_state.users:
+        if new_pass:
+            level, bar = password_strength(new_pass)
+            st.write(f"New Password Strength: **{level}**")
+            st.progress(bar)
 
-            answer = st.text_input("Recovery Answer")
-            new_pass = st.text_input("New Password", type="password")
+        if st.button("Reset Password", use_container_width=True):
 
-            if st.button("Reset Password"):
+            if u in st.session_state.users:
 
-                if answer.lower() == st.session_state.users[u]["recovery"]:
+                saved_recovery = st.session_state.users[u].get("recovery", "")
+
+                if answer.lower() == saved_recovery:
 
                     valid, msg = validate_password(new_pass)
 
@@ -167,23 +208,22 @@ if st.session_state.username is None:
                         st.success("Password reset successful!")
 
                 else:
-                    st.error("Wrong recovery answer")
+                    st.error("Wrong recovery answer or no recovery set")
 
-        else:
-            if u:
-                st.warning("Username not found")
+            else:
+                st.error("Username not found")
 
     st.stop()
 
 # ---------------------------
 # HEADER
 # ---------------------------
-c1, c2 = st.columns([8,1])
+col1, col2 = st.columns([8, 1])
 
-with c1:
+with col1:
     st.title("Welcome 🎉")
 
-with c2:
+with col2:
     if st.button("Logout"):
         st.session_state.username = None
         st.rerun()
@@ -195,12 +235,14 @@ st.success(f"Logged in as: {st.session_state.username}")
 # ---------------------------
 if st.session_state.username == "admin":
 
+    st.markdown("---")
     st.header("🛠 Admin Dashboard")
 
     users = st.session_state.users
 
-    if users:
+    st.metric("Total Users", len(users))
 
+    if users:
         rows = []
 
         for username, data in users.items():
@@ -214,24 +256,24 @@ if st.session_state.username == "admin":
 
         st.subheader("🗑 Delete User")
 
-        user_to_delete = st.selectbox("Select user", list(users.keys()))
+        user_list = list(users.keys())
+        user_to_delete = st.selectbox("Select user", user_list)
 
-        if st.button("Delete User"):
+        if st.button("Delete User", use_container_width=True):
             del st.session_state.users[user_to_delete]
             save_users(st.session_state.users)
-            st.success("Deleted")
+            st.success(f"{user_to_delete} deleted successfully")
             st.rerun()
 
     else:
-        st.warning("No users yet.")
+        st.warning("No users registered yet.")
 
 # ---------------------------
 # USER DASHBOARD
 # ---------------------------
 else:
-    st.subheader("")
-    
-  
+    st.markdown("---")
+   
 
 
 
