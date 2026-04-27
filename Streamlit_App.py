@@ -33,6 +33,7 @@ components.html(CLARITY_CODE, height=0)
 import streamlit as st
 import json
 import os
+from datetime import datetime
 
 st.set_page_config(page_title="Ayobami App")
 
@@ -80,19 +81,28 @@ if st.session_state.username is None:
 
     if st.button(option):
 
+        # ---------------------------
         # CREATE ACCOUNT
+        # ---------------------------
         if option == "Create Account":
             if u and p:
                 if u in st.session_state.users:
                     st.error("Username already exists")
                 else:
-                    st.session_state.users[u] = p
+                    # STORE PASSWORD + REGISTRATION TIME
+                    st.session_state.users[u] = {
+                        "password": p,
+                        "registered_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
+
                     save_users(st.session_state.users)
                     st.success("Account created successfully!")
             else:
                 st.warning("Please fill all fields")
 
+        # ---------------------------
         # LOGIN
+        # ---------------------------
         if option == "Login":
 
             # ADMIN LOGIN
@@ -100,8 +110,8 @@ if st.session_state.username is None:
                 st.session_state.username = "admin"
                 st.rerun()
 
-            # USER LOGIN
-            elif u in st.session_state.users and st.session_state.users[u] == p:
+            # NORMAL USER LOGIN
+            elif u in st.session_state.users and st.session_state.users[u]["password"] == p:
                 st.session_state.username = u
                 st.rerun()
 
@@ -128,7 +138,7 @@ st.success(f"Logged in as: {st.session_state.username}")
 
 
 # ---------------------------
-# ADMIN DASHBOARD + ANALYTICS
+# ADMIN DASHBOARD (ANALYTICS)
 # ---------------------------
 if st.session_state.username == "admin":
 
@@ -142,78 +152,46 @@ if st.session_state.username == "admin":
         # ---------------------------
         # METRICS
         # ---------------------------
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.metric("Total Users", len(users))
-
-        with col2:
-            st.metric("Total Admins", 1)
+        st.metric("Total Users", len(users))
 
         st.markdown("---")
 
         # ---------------------------
-        # USER TABLE
+        # TABLE DATA
         # ---------------------------
+        usernames = []
+        passwords = []
+        dates = []
+
+        for username, data in users.items():
+            usernames.append(username)
+            passwords.append(data["password"])
+            dates.append(data["registered_at"])
+
         st.subheader("📋 Registered Users")
 
         st.dataframe(
             {
-                "Username": list(users.keys()),
-                "Password": list(users.values())
+                "Username": usernames,
+                "Password": passwords,
+                "Registered At": dates
             },
             use_container_width=True
         )
 
         # ---------------------------
-        # DELETE USER
+        # ANALYTICS
         # ---------------------------
-        st.markdown("### 🗑 Delete User")
-
-        user_to_delete = st.selectbox(
-            "Select user",
-            options=list(users.keys())
-        )
-
-        if st.button("Delete User"):
-            del st.session_state.users[user_to_delete]
-            save_users(st.session_state.users)
-            st.success(f"Deleted {user_to_delete}")
-            st.rerun()
-
         st.markdown("---")
+        st.subheader("📊 Registration Analytics")
 
-        # ---------------------------
-        # ANALYTICS SECTION
-        # ---------------------------
-        st.subheader("📊 User Analytics")
+        # Simple chart: registrations per day
+        from collections import Counter
 
-        usernames = list(users.keys())
+        days = [d.split(" ")[0] for d in dates]
+        daily_counts = Counter(days)
 
-        # 1. Username length analysis
-        username_lengths = [len(u) for u in usernames]
-
-        st.write("📏 Username Length Distribution")
-        st.bar_chart(username_lengths)
-
-        # 2. First letter distribution
-        first_letters = {}
-
-        for u in usernames:
-            letter = u[0].upper()
-            first_letters[letter] = first_letters.get(letter, 0) + 1
-
-        st.write("🔤 First Letter Distribution")
-        st.bar_chart(first_letters)
-
-        # 3. Summary insights
-        st.markdown("### 🧠 Insights")
-
-        avg_length = sum(username_lengths) / len(username_lengths)
-
-        st.info(f"Average username length: {avg_length:.2f}")
-        st.info(f"Longest username: {max(usernames, key=len)}")
-        st.info(f"Shortest username: {min(usernames, key=len)}")
+        st.bar_chart(daily_counts)
 
     else:
         st.warning("No users registered yet.")
@@ -224,7 +202,7 @@ if st.session_state.username == "admin":
 # ---------------------------
 else:
     st.markdown("---")
-  
+ 
 
 
 
