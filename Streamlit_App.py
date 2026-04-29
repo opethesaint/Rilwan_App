@@ -1057,17 +1057,21 @@ if st.session_state.username is None:
 user=st.session_state.username; update_online(user)
 
 c1,c2=st.columns([8,1])
-with c1: st.title('💬 Welcome Ayobami')
+with c1:
+    st.title('💬 Welcome Ayobami')
 with c2:
     if st.session_state.chat_open:
         if st.button('Close Chat', key='close_top'):
             st.session_state.chat_open=False
             st.rerun()
+    else:
+        if st.button('Open Chat', key='open_chat_top'):
+            st.session_state.chat_open=True
+            st.rerun()
 
 if not st.session_state.chat_open:
-    if st.button('Open Chat', key='open_chat'):
-        st.session_state.chat_open=True; st.rerun()
-    st.stop()
+    st.info('Chat is closed.')
+    st.s
 
 online=get_online(user)
 target=st.selectbox('Chat with', online if online else ['No users online'])
@@ -1085,10 +1089,6 @@ if text:
     if target != 'No users online':
         send_msg(user, target, text)
     st.rerun()
-
-
-
-
 
 
 
