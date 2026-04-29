@@ -1000,8 +1000,8 @@ st.markdown("""
 
 ##########
 # ═══════════════════════════════════════════════════════════════
-# PASTE THIS ENTIRE BLOCK INTO YOUR EXISTING app.py
-# Place it AFTER your login code (where users are already authenticated)
+# PRO WHATSAPP CHAT - PASTE INTO YOUR EXISTING app.py
+# Uses ONLY native Streamlit elements - zero HTML, zero escaping issues
 # ═══════════════════════════════════════════════════════════════
 
 import json
@@ -1012,165 +1012,139 @@ from pathlib import Path
 from datetime import datetime, timedelta
 
 # ===============================================================
-# CONFIGURATION
+# CONFIG
 # ===============================================================
-CHAT_DATA_DIR = Path("chat_backend")
-CHAT_DATA_DIR.mkdir(exist_ok=True)
+CHAT_DIR = Path("chat_backend")
+CHAT_DIR.mkdir(exist_ok=True)
 
-CHAT_FILE = CHAT_DATA_DIR / "messages.json"
-CHAT_USERS_FILE = CHAT_DATA_DIR / "users.json"
-CHAT_TYPING_FILE = CHAT_DATA_DIR / "typing.json"
-CHAT_READ_RECEIPTS_FILE = CHAT_DATA_DIR / "read_receipts.json"
-CHAT_REACTIONS_FILE = CHAT_DATA_DIR / "reactions.json"
-CHAT_FILES_DIR = CHAT_DATA_DIR / "shared_files"
+CHAT_FILE = CHAT_DIR / "messages.json"
+CHAT_USERS_FILE = CHAT_DIR / "users.json"
+CHAT_TYPING_FILE = CHAT_DIR / "typing.json"
+CHAT_READ_FILE = CHAT_DIR / "read_receipts.json"
+CHAT_REACT_FILE = CHAT_DIR / "reactions.json"
+CHAT_FILES_DIR = CHAT_DIR / "shared_files"
 CHAT_FILES_DIR.mkdir(exist_ok=True)
 
-CHAT_MAX_FILE_MB = 10
-CHAT_HISTORY_DAYS = 30
-CHAT_REFRESH = 2
+MAX_FILE_MB = 10
+HISTORY_DAYS = 30
 
-CHAT_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "🎉", "🤔", "👎", "🙏", "💯"]
+EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "🎉", "🤔", "👎", "🙏", "💯"]
 
 # ===============================================================
 # JSON HELPERS
 # ===============================================================
 
-def _chat_load_json(filepath, default=None):
-    if filepath.exists():
-        with open(filepath, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return default if default is not None else {}
+def _load(fp, default=None):
+    return json.load(open(fp)) if fp.exists() else (default or {})
 
-def _chat_save_json(filepath, data):
-    with open(filepath, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2, default=str)
+def _save(fp, data):
+    json.dump(data, open(fp, 'w'), indent=2, default=str)
 
 # ===============================================================
-# USER STATUS
+# USERS
 # ===============================================================
 
-def _chat_update_status(username, status="online"):
-    users = _chat_load_json(CHAT_USERS_FILE, {})
-    users[username] = {
-        "status": status,
-        "last_seen": datetime.now().isoformat(),
-        "joined_at": users.get(username, {}).get("joined_at", datetime.now().isoformat())
-    }
-    _chat_save_json(CHAT_USERS_FILE, users)
+def _update_status(user, status="online"):
+    u = _load(CHAT_USERS_FILE, {})
+    u[user] = {"status": status, "last_seen": datetime.now().isoformat(),
+               "joined_at": u.get(user, {}).get("joined_at", datetime.now().isoformat())}
+    _save(CHAT_USERS_FILE, u)
 
-def _chat_get_online(exclude=None):
-    users = _chat_load_json(CHAT_USERS_FILE, {})
+def _get_online(exclude=None):
+    u = _load(CHAT_USERS_FILE, {})
     now = datetime.now()
-    online = {}
-    for user, info in users.items():
-        if user == exclude:
-            continue
-        last_seen = datetime.fromisoformat(info["last_seen"])
-        if (now - last_seen).seconds <= 30 and info["status"] == "online":
-            online[user] = info
-    return online
+    return {k: v for k, v in u.items() if k != exclude
+            and (now - datetime.fromisoformat(v["last_seen"])).seconds <= 30
+            and v["status"] == "online"}
 
 # ===============================================================
 # MESSAGES
 # ===============================================================
 
-def _chat_load_messages():
-    return _chat_load_json(CHAT_FILE, {"messages": [], "last_cleanup": datetime.now().isoformat()})
+def _load_msgs():
+    return _load(CHAT_FILE, {"messages": [], "last_cleanup": datetime.now().isoformat()})
 
-def _chat_save_messages(data):
-    _chat_save_json(CHAT_FILE, data)
+def _save_msgs(data):
+    _save(CHAT_FILE, data)
 
-def _chat_add_msg(from_user, to_user, text, msg_type="text", file_data=None):
-    data = _chat_load_messages()
+def _add_msg(from_u, to_u, text, mtype="text", fdata=None):
+    d = _load_msgs()
     msg = {
-        "id": hashlib.md5(f"{from_user}{to_user}{datetime.now().isoformat()}".encode()).hexdigest()[:12],
-        "from": from_user,
-        "to": to_user,
-        "text": text,
-        "type": msg_type,
-        "file_data": file_data,
-        "time": datetime.now().strftime("%H:%M"),
+        "id": hashlib.md5(f"{from_u}{to_u}{datetime.now().isoformat()}".encode()).hexdigest()[:12],
+        "from": from_u, "to": to_u, "text": text, "type": mtype,
+        "file_data": fdata, "time": datetime.now().strftime("%H:%M"),
         "timestamp": datetime.now().isoformat(),
-        "chat_type": "global" if to_user == "global" else "private",
-        "edited": False,
-        "edited_at": None,
-        "deleted": False
+        "chat_type": "global" if to_u == "global" else "private",
+        "edited": False, "edited_at": None, "deleted": False
     }
-    data["messages"].append(msg)
-    _chat_save_messages(data)
+    d["messages"].append(msg)
+    _save_msgs(d)
     return msg["id"]
 
-def _chat_edit_msg(msg_id, new_text):
-    data = _chat_load_messages()
-    for msg in data["messages"]:
-        if msg["id"] == msg_id:
-            msg["text"] = new_text
-            msg["edited"] = True
-            msg["edited_at"] = datetime.now().isoformat()
-            _chat_save_messages(data)
+def _edit_msg(mid, new_text):
+    d = _load_msgs()
+    for m in d["messages"]:
+        if m["id"] == mid:
+            m["text"] = new_text
+            m["edited"] = True
+            m["edited_at"] = datetime.now().isoformat()
+            _save_msgs(d)
             return True
     return False
 
-def _chat_delete_msg(msg_id):
-    data = _chat_load_messages()
-    for msg in data["messages"]:
-        if msg["id"] == msg_id:
-            msg["deleted"] = True
-            msg["text"] = "This message was deleted"
-            _chat_save_messages(data)
+def _delete_msg(mid):
+    d = _load_msgs()
+    for m in d["messages"]:
+        if m["id"] == mid:
+            m["deleted"] = True
+            m["text"] = "🗑️ This message was deleted"
+            _save_msgs(d)
             return True
     return False
 
-def _chat_get_msgs(username, chat_with):
-    data = _chat_load_messages()
-    messages = data.get("messages", [])
+def _get_msgs(user, chat_with):
+    d = _load_msgs()
+    m = d.get("messages", [])
     if chat_with == "global":
-        return [m for m in messages if m.get("chat_type") == "global"]
-    return [
-        m for m in messages
-        if m.get("chat_type") == "private"
-        and ((m["from"] == username and m["to"] == chat_with) or
-             (m["from"] == chat_with and m["to"] == username))
-    ]
+        return [x for x in m if x.get("chat_type") == "global"]
+    return [x for x in m if x.get("chat_type") == "private"
+            and ((x["from"] == user and x["to"] == chat_with) or
+                 (x["from"] == chat_with and x["to"] == user))]
 
 # ===============================================================
 # READ RECEIPTS
 # ===============================================================
 
-def _chat_mark_read(username, chat_with):
-    receipts = _chat_load_json(CHAT_READ_RECEIPTS_FILE, {})
-    messages = _chat_get_msgs(username, chat_with)
-    for msg in messages:
-        if msg["from"] != username:
-            mid = msg["id"]
-            if mid not in receipts:
-                receipts[mid] = {}
-            receipts[mid][username] = datetime.now().isoformat()
-    _chat_save_json(CHAT_READ_RECEIPTS_FILE, receipts)
+def _mark_read(user, chat_with):
+    r = _load(CHAT_READ_FILE, {})
+    for m in _get_msgs(user, chat_with):
+        if m["from"] != user:
+            mid = m["id"]
+            r.setdefault(mid, {})[user] = datetime.now().isoformat()
+    _save(CHAT_READ_FILE, r)
 
-def _chat_read_status(msg_id):
-    return _chat_load_json(CHAT_READ_RECEIPTS_FILE, {}).get(msg_id, {})
+def _read_status(mid):
+    return _load(CHAT_READ_FILE, {}).get(mid, {})
 
 # ===============================================================
 # REACTIONS
 # ===============================================================
 
-def _chat_add_reaction(msg_id, username, emoji):
-    reactions = _chat_load_json(CHAT_REACTIONS_FILE, {})
-    if msg_id not in reactions:
-        reactions[msg_id] = {}
-    user_reactions = reactions[msg_id].get(username, [])
-    if emoji in user_reactions:
-        user_reactions.remove(emoji)
+def _add_reaction(mid, user, emoji):
+    r = _load(CHAT_REACT_FILE, {})
+    r.setdefault(mid, {})
+    ur = r[mid].get(user, [])
+    if emoji in ur:
+        ur.remove(emoji)
     else:
-        user_reactions.append(emoji)
-    reactions[msg_id][username] = user_reactions
-    _chat_save_json(CHAT_REACTIONS_FILE, reactions)
+        ur.append(emoji)
+    r[mid][user] = ur
+    _save(CHAT_REACT_FILE, r)
 
-def _chat_get_reactions(msg_id):
-    reactions = _chat_load_json(CHAT_REACTIONS_FILE, {}).get(msg_id, {})
+def _get_reactions(mid):
+    r = _load(CHAT_REACT_FILE, {}).get(mid, {})
     counts = {}
-    for user, emojis in reactions.items():
+    for user, emojis in r.items():
         for e in emojis:
             counts.setdefault(e, []).append(user)
     return counts
@@ -1179,20 +1153,20 @@ def _chat_get_reactions(msg_id):
 # TYPING
 # ===============================================================
 
-def _chat_set_typing(username, chat_with, is_typing=True):
-    data = _chat_load_json(CHAT_TYPING_FILE, {})
-    key = f"{username}:{chat_with}"
-    if is_typing:
-        data[key] = {"since": datetime.now().isoformat(), "to": chat_with}
+def _set_typing(user, chat_with, typing=True):
+    d = _load(CHAT_TYPING_FILE, {})
+    key = f"{user}:{chat_with}"
+    if typing:
+        d[key] = {"since": datetime.now().isoformat(), "to": chat_with}
     else:
-        data.pop(key, None)
-    _chat_save_json(CHAT_TYPING_FILE, data)
+        d.pop(key, None)
+    _save(CHAT_TYPING_FILE, d)
 
-def _chat_get_typing(chat_with, exclude):
-    data = _chat_load_json(CHAT_TYPING_FILE, {})
+def _get_typing(chat_with, exclude):
+    d = _load(CHAT_TYPING_FILE, {})
     now = datetime.now()
     users = []
-    for key, info in data.items():
+    for key, info in d.items():
         parts = key.split(":", 1)
         if len(parts) != 2:
             continue
@@ -1208,61 +1182,66 @@ def _chat_get_typing(chat_with, exclude):
 # FILES
 # ===============================================================
 
-def _chat_save_file(uploaded_file, username):
+def _save_file(uploaded_file, user):
     if not uploaded_file:
         return None
     size_mb = len(uploaded_file.getvalue()) / (1024 * 1024)
-    if size_mb > CHAT_MAX_FILE_MB:
-        st.error(f"File too large! Max {CHAT_MAX_FILE_MB}MB")
+    if size_mb > MAX_FILE_MB:
+        st.error(f"File too large! Max {MAX_FILE_MB}MB")
         return None
     ext = Path(uploaded_file.name).suffix
-    unique = f"{hashlib.md5(f'{username}{datetime.now().isoformat()}'.encode()).hexdigest()[:16]}{ext}"
+    unique = f"{hashlib.md5(f'{user}{datetime.now().isoformat()}'.encode()).hexdigest()[:16]}{ext}"
     path = CHAT_FILES_DIR / unique
     with open(path, "wb") as f:
         f.write(uploaded_file.getvalue())
-    return {
-        "original_name": uploaded_file.name,
-        "saved_name": unique,
-        "size_mb": round(size_mb, 2),
-        "type": uploaded_file.type
-    }
+    return {"original_name": uploaded_file.name, "saved_name": unique,
+            "size_mb": round(size_mb, 2), "type": uploaded_file.type}
 
-def _chat_file_link(file_data):
-    if not file_data:
+def _file_link(fdata):
+    if not fdata:
         return None
-    path = CHAT_FILES_DIR / file_data["saved_name"]
+    path = CHAT_FILES_DIR / fdata["saved_name"]
     if not path.exists():
         return None
     with open(path, "rb") as f:
         data = f.read()
     b64 = base64.b64encode(data).decode()
-    mime = file_data.get("type", "application/octet-stream")
+    mime = fdata.get("type", "application/octet-stream")
     return f"data:{mime};base64,{b64}"
 
 # ===============================================================
 # CLEANUP
 # ===============================================================
 
-def _chat_cleanup(force=False):
-    data = _chat_load_messages()
-    last = datetime.fromisoformat(data.get("last_cleanup", datetime.now().isoformat()))
+def _cleanup(force=False):
+    d = _load_msgs()
+    last = datetime.fromisoformat(d.get("last_cleanup", datetime.now().isoformat()))
     now = datetime.now()
     if not force and (now - last).days < 1:
         return 0
-    cutoff = now - timedelta(days=CHAT_HISTORY_DAYS)
-    msgs = data.get("messages", [])
+    cutoff = now - timedelta(days=HISTORY_DAYS)
+    msgs = d.get("messages", [])
     kept = [m for m in msgs if datetime.fromisoformat(m["timestamp"]) > cutoff]
     deleted = len(msgs) - len(kept)
-    data["messages"] = kept
-    data["last_cleanup"] = now.isoformat()
-    _chat_save_messages(data)
+    d["messages"] = kept
+    d["last_cleanup"] = now.isoformat()
+    _save_msgs(d)
     for fp in CHAT_FILES_DIR.iterdir():
         if fp.is_file() and datetime.fromtimestamp(fp.stat().st_mtime) < cutoff:
             fp.unlink()
     return deleted
 
+def _clear_all():
+    _save_msgs({"messages": [], "last_cleanup": datetime.now().isoformat()})
+    for fp in CHAT_FILES_DIR.iterdir():
+        if fp.is_file():
+            fp.unlink()
+    _save(CHAT_READ_FILE, {})
+    _save(CHAT_TYPING_FILE, {})
+    _save(CHAT_REACT_FILE, {})
+
 # ===============================================================
-# SESSION STATE INIT
+# SESSION STATE
 # ===============================================================
 
 if "chat_current" not in st.session_state:
@@ -1273,239 +1252,301 @@ if "chat_reacting" not in st.session_state:
     st.session_state.chat_reacting = None
 
 # ===============================================================
-# POPUP CHAT DIALOG
+# ===============================================================
+# CHAT POPUP DIALOG
+# ===============================================================
 # ===============================================================
 
 @st.dialog("💬 Chat", width="large")
 def open_chat_popup():
-    """Call this function to open the chat popup"""
+    """Opens a WhatsApp-style chat popup. Call this from a button."""
 
-    username = st.session_state.get("username") or st.session_state.get("user") or "User"
+    # Get current user - ADJUST THIS to match your login system
+    user = st.session_state.get("username") or st.session_state.get("user") or "User"
 
-    _chat_update_status(username, "online")
+    _update_status(user, "online")
     chat_with = st.session_state.chat_current
     is_global = chat_with == "global"
 
-    _chat_mark_read(username, chat_with)
+    _mark_read(user, chat_with)
 
-    # Header
-    hc1, hc2 = st.columns([3, 1])
-    with hc1:
+    # ═══════════════════════════════════════════════════════════
+    # HEADER
+    # ═══════════════════════════════════════════════════════════
+
+    h1, h2 = st.columns([3, 1])
+    with h1:
         if is_global:
             st.subheader("🌍 Global Chat")
+            st.caption("Everyone can see these messages")
         else:
-            online = _chat_get_online(exclude=username)
+            online = _get_online(exclude=user)
             status = "🟢 Online" if chat_with in online else "⚪ Offline"
-            st.subheader(f"{chat_with}")
+            st.subheader(f"💬 {chat_with}")
             st.caption(status)
 
-    with hc2:
-        all_u = _chat_load_json(CHAT_USERS_FILE, {})
-        others = [u for u in all_u.keys() if u != username]
-        options = ["Global Chat"] + sorted(others)
-        current_idx = options.index(chat_with) if chat_with in options else 0
-        new_chat = st.selectbox("Switch", options, index=current_idx, key="chat_switch", label_visibility="collapsed")
-        if new_chat == "Global Chat":
-            new_chat = "global"
-        if new_chat != chat_with:
-            st.session_state.chat_current = new_chat
+    with h2:
+        all_users = _load(CHAT_USERS_FILE, {})
+        others = [u for u in all_users.keys() if u != user]
+        options = ["🌍 Global Chat"] + sorted(others)
+        current = f"🌍 Global Chat" if is_global else chat_with
+        idx = options.index(current) if current in options else 0
+        new_chat = st.selectbox("Switch", options, index=idx, key="chat_switch", label_visibility="collapsed")
+        target = "global" if new_chat == "🌍 Global Chat" else new_chat
+        if target != chat_with:
+            st.session_state.chat_current = target
             st.rerun()
 
     st.divider()
 
-    # Typing
-    typing = _chat_get_typing(chat_with, username)
+    # ═══════════════════════════════════════════════════════════
+    # TYPING INDICATOR
+    # ═══════════════════════════════════════════════════════════
+
+    typing = _get_typing(chat_with, user)
     if typing:
         verb = "is" if len(typing) == 1 else "are"
-        st.markdown(f"<small style='color:#888;'>✏️ {', '.join(typing)} {verb} typing...</small>", unsafe_allow_html=True)
+        st.caption(f"✏️ {', '.join(typing)} {verb} typing...")
 
-    # Messages
-    messages = _chat_get_msgs(username, chat_with)
+    # ═══════════════════════════════════════════════════════════
+    # MESSAGES - NATIVE STREAMLIT ONLY
+    # ═══════════════════════════════════════════════════════════
 
-    container = st.container(height=350)
-    with container:
+    messages = _get_msgs(user, chat_with)
+
+    msg_container = st.container(height=400)
+    with msg_container:
         if not messages:
-            st.info("No messages yet. Say hello! 👋")
+            st.info("👋 No messages yet. Start the conversation!")
         else:
             for msg in messages:
-                is_me = msg["from"] == username
+                is_me = msg["from"] == user
                 is_deleted = msg.get("deleted", False)
 
-                # Build message HTML - FIXED: use unsafe_allow_html=True properly
-                edited = ""
-                if msg.get("edited") and not is_deleted:
-                    edited = " <small style='opacity:0.6;'>(edited)</small>"
+                # Choose avatar
+                avatar = "👤" if is_me else "🧑"
+                name = "You" if is_me else msg["from"]
 
-                attachment = ""
+                # Build message content
+                content_parts = []
+
+                # Main text
+                text = msg["text"]
+                if msg.get("edited") and not is_deleted:
+                    text += " *(edited)*"
+                content_parts.append(text)
+
+                # File attachment
                 if msg.get("file_data") and not is_deleted:
                     fd = msg["file_data"]
-                    link = _chat_file_link(fd)
+                    link = _file_link(fd)
                     if msg["type"] == "image" and link:
-                        attachment = f'<br><img src="{link}" style="border-radius:8px;max-width:200px;margin-top:4px;" />'
+                        content_parts.append(f"\n📷 {fd['original_name']}")
                     elif link:
-                        color = "white" if is_me else "#333"
-                        attachment = f'<br><div style="background:rgba(255,255,255,0.2);border-radius:6px;padding:4px 8px;margin-top:4px;font-size:0.85rem;">📎 <a href="{link}" download="{fd["original_name"]}" style="color:{color};text-decoration:underline;">{fd["original_name"]} ({fd["size_mb"]} MB)</a></div>'
+                        content_parts.append(f"\n📎 {fd['original_name']} ({fd['size_mb']} MB)")
 
-                reactions_html = ""
-                if not is_deleted:
-                    r = _chat_get_reactions(msg["id"])
-                    if r:
-                        badges = []
-                        for emoji, users in r.items():
-                            count = len(users)
-                            tooltip = ", ".join(users)
-                            badges.append(f'<span style="background:rgba(0,0,0,0.08);border-radius:10px;padding:1px 6px;font-size:0.75rem;" title="{tooltip}">{emoji} {count}</span>')
-                        align = "flex-end" if is_me else "flex-start"
-                        reactions_html = f'<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:{align};margin-top:4px;">{"".join(badges)}</div>'
+                # Reactions
+                reactions = _get_reactions(msg["id"])
+                if reactions and not is_deleted:
+                    react_str = "  ".join([f"{emoji} {len(users)}" for emoji, users in reactions.items()])
+                    content_parts.append(f"\n\n{react_str}")
 
-                # FIXED: Build read receipt separately and render with markdown
-                read_html = ""
+                # Read receipt
                 if is_me and not is_deleted:
-                    by = _chat_read_status(msg["id"])
+                    by = _read_status(msg["id"])
                     if chat_with == "global":
-                        cnt = len([u for u in by if u != username])
+                        cnt = len([u for u in by if u != user])
                         if cnt > 0:
-                            read_html = f'<div style="font-size:0.65rem;color:#90EE90;margin-top:2px;">✓✓ Read by {cnt}</div>'
+                            content_parts.append(f"\n\n✓✓ Read by {cnt}")
                         else:
-                            read_html = '<div style="font-size:0.65rem;color:#ccc;margin-top:2px;">✓ Sent</div>'
+                            content_parts.append("\n\n✓ Sent")
                     else:
                         if chat_with in by:
-                            read_html = '<div style="font-size:0.65rem;color:#90EE90;margin-top:2px;">✓✓ Read</div>'
+                            content_parts.append("\n\n✓✓ Read")
                         else:
-                            read_html = '<div style="font-size:0.65rem;color:#ccc;margin-top:2px;">✓ Sent</div>'
+                            content_parts.append("\n\n✓ Sent")
 
-                bg = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" if is_me else "#f0f2f6"
-                color = "white" if is_me else "#333"
-                align = "margin-left:auto;text-align:right;" if is_me else "margin-right:auto;text-align:left;"
-                opacity = "opacity:0.6;font-style:italic;" if is_deleted else ""
+                # Display using native st.chat_message
+                full_content = "\n".join(content_parts)
 
-                # FIXED: Render the entire message as one HTML block with unsafe_allow_html=True
-                full_html = f"""<div style="background:{bg};color:{color};padding:0.7rem 1rem;border-radius:1rem;margin:0.4rem 0;max-width:78%;word-wrap:break-word;{align}{opacity}">
-                    <small><b>{msg["from"]}</b> · {msg["time"]}</small><br>
-                    {msg["text"]}{edited}
-                    {attachment}
-                    {reactions_html}
-                    {read_html}
-                </div>
-                <div style="clear:both;"></div>"""
+                with st.chat_message(name, avatar=avatar):
+                    st.write(full_content)
 
-                st.markdown(full_html, unsafe_allow_html=True)
+                    # Show image inline if it's an image
+                    if msg.get("file_data") and not is_deleted and msg["type"] == "image":
+                        fd = msg["file_data"]
+                        link = _file_link(fd)
+                        if link:
+                            st.image(link, width=250)
 
-                # Action buttons
-                if not is_deleted:
-                    ac1, ac2, ac3, ac4 = st.columns([1, 1, 1, 10])
-                    with ac1:
-                        if st.button("😊", key=f"r_{msg['id']}", help="React"):
-                            st.session_state.chat_reacting = msg["id"] if st.session_state.chat_reacting != msg["id"] else None
-                            st.rerun()
-                    if is_me:
-                        with ac2:
-                            if st.button("✏️", key=f"e_{msg['id']}", help="Edit"):
-                                st.session_state.chat_editing = msg["id"]
-                                st.rerun()
-                        with ac3:
-                            if st.button("🗑️", key=f"d_{msg['id']}", help="Delete"):
-                                _chat_delete_msg(msg["id"])
+                    # Action buttons in columns below message
+                    if not is_deleted:
+                        c1, c2, c3, c4 = st.columns([1, 1, 1, 6])
+
+                        with c1:
+                            if st.button("😊", key=f"react_{msg['id']}", help="React"):
+                                st.session_state.chat_reacting = msg["id"] if st.session_state.chat_reacting != msg["id"] else None
                                 st.rerun()
 
-                # Emoji picker
+                        if is_me:
+                            with c2:
+                                if st.button("✏️", key=f"edit_{msg['id']}", help="Edit"):
+                                    st.session_state.chat_editing = msg["id"]
+                                    st.rerun()
+                            with c3:
+                                if st.button("🗑️", key=f"del_{msg['id']}", help="Delete"):
+                                    _delete_msg(msg["id"])
+                                    st.rerun()
+
+                # Emoji picker (appears below the message)
                 if st.session_state.chat_reacting == msg["id"]:
-                    emojis = st.columns(len(CHAT_EMOJIS))
-                    for i, emoji in enumerate(CHAT_EMOJIS):
-                        with emojis[i]:
+                    st.caption("Pick a reaction:")
+                    emoji_cols = st.columns(len(EMOJIS))
+                    for i, emoji in enumerate(EMOJIS):
+                        with emoji_cols[i]:
                             if st.button(emoji, key=f"em_{msg['id']}_{emoji}"):
-                                _chat_add_reaction(msg["id"], username, emoji)
+                                _add_reaction(msg["id"], user, emoji)
                                 st.session_state.chat_reacting = None
                                 st.rerun()
 
                 # Edit form
                 if st.session_state.chat_editing == msg["id"] and is_me:
                     with st.container(border=True):
-                        nt = st.text_input("Edit", value=msg["text"], key=f"ei_{msg['id']}", label_visibility="collapsed")
+                        new_text = st.text_input("Edit message", value=msg["text"], key=f"edit_in_{msg['id']}", label_visibility="collapsed")
                         ec1, ec2 = st.columns([1, 1])
                         with ec1:
-                            if st.button("Save", key=f"es_{msg['id']}", type="primary"):
-                                if nt.strip():
-                                    _chat_edit_msg(msg["id"], nt.strip())
+                            if st.button("💾 Save", key=f"save_{msg['id']}", type="primary"):
+                                if new_text.strip():
+                                    _edit_msg(msg["id"], new_text.strip())
                                     st.session_state.chat_editing = None
                                     st.rerun()
                         with ec2:
-                            if st.button("Cancel", key=f"ec_{msg['id']}"):
+                            if st.button("❌ Cancel", key=f"cancel_{msg['id']}"):
                                 st.session_state.chat_editing = None
                                 st.rerun()
 
+    # ═══════════════════════════════════════════════════════════
+    # INPUT AREA
+    # ═══════════════════════════════════════════════════════════
+
     st.divider()
 
-    # Input
-    ic1, ic2 = st.columns([4, 1])
+    # File upload
+    uploaded = st.file_uploader(
+        "📎 Attach file",
+        type=["jpg", "jpeg", "png", "gif", "pdf", "txt", "doc", "docx"],
+        key=f"file_{chat_with}",
+        label_visibility="collapsed"
+    )
+
+    # Message input
+    ic1, ic2 = st.columns([5, 1])
     with ic1:
-        text = st.text_input("Message", key=f"ci_{chat_with}", label_visibility="collapsed", placeholder="Type a message...")
+        text = st.chat_input("Type a message...", key=f"input_{chat_with}")
         if text:
-            _chat_set_typing(username, chat_with, True)
+            _set_typing(user, chat_with, True)
         else:
-            _chat_set_typing(username, chat_with, False)
+            _set_typing(user, chat_with, False)
 
-        file = st.file_uploader("📎", type=["jpg","jpeg","png","gif","pdf","txt","doc","docx"], key=f"cf_{chat_with}", label_visibility="collapsed")
+    # Send button (for file-only messages)
+    if uploaded and not text:
+        if st.button("📤 Send File", type="primary", use_container_width=True, key=f"send_file_{chat_with}"):
+            fd = _save_file(uploaded, user)
+            if fd:
+                mtype = "image" if uploaded.type.startswith("image/") else "file"
+                txt = f"📎 {fd['original_name']}"
+                _add_msg(user, chat_with, txt, mtype, fd)
+                _set_typing(user, chat_with, False)
+                st.rerun()
 
-    with ic2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("📤 Send", type="primary", use_container_width=True, key=f"cs_{chat_with}"):
-            if text.strip() or file:
-                fd = None
-                mtype = "text"
-                if file:
-                    fd = _chat_save_file(file, username)
-                    if fd:
-                        mtype = "image" if file.type.startswith("image/") else "file"
-                txt = text.strip() if text.strip() else (f"Shared {fd['original_name']}" if fd else "")
-                _chat_add_msg(username, chat_with, txt, mtype, fd)
-                _chat_set_typing(username, chat_with, False)
+    # Handle text message (from chat_input)
+    if text:
+        fd = None
+        mtype = "text"
+        if uploaded:
+            fd = _save_file(uploaded, user)
+            if fd:
+                mtype = "image" if uploaded.type.startswith("image/") else "file"
+
+        final_text = text.strip()
+        if fd and mtype != "text" and not text.strip():
+            final_text = f"📎 {fd['original_name']}"
+
+        _add_msg(user, chat_with, final_text, mtype, fd)
+        _set_typing(user, chat_with, False)
+        st.rerun()
+
+    # ═══════════════════════════════════════════════════════════
+    # ONLINE USERS SIDEBAR (inside dialog)
+    # ═══════════════════════════════════════════════════════════
+
+    with st.expander("👥 Online Users"):
+        online = _get_online(exclude=user)
+        if not online:
+            st.write("No one else is online")
+        else:
+            for u in sorted(online.keys()):
+                cols = st.columns([3, 1])
+                with cols[0]:
+                    st.write(f"🟢 {u}")
+                with cols[1]:
+                    if st.button("Chat", key=f"ou_btn_{u}"):
+                        st.session_state.chat_current = u
+                        st.rerun()
+
+    # Settings
+    with st.expander("⚙️ Settings"):
+        st.write(f"Messages kept for: {HISTORY_DAYS} days")
+        msg_count = len(_load_msgs().get("messages", []))
+        st.write(f"Total messages: {msg_count}")
+
+        if st.button("🧹 Cleanup Old Messages"):
+            deleted = _cleanup(force=True)
+            st.success(f"Deleted {deleted} old messages!")
+            time.sleep(1)
+            st.rerun()
+
+        confirm = st.checkbox("I understand this will delete ALL messages")
+        if st.button("💥 Clear ALL History", type="secondary"):
+            if confirm:
+                _clear_all()
+                st.success("All history cleared!")
+                time.sleep(1)
                 st.rerun()
             else:
-                st.warning("Type or attach something")
-
-    # Online users
-    with st.expander("👥 Online"):
-        on = _chat_get_online(exclude=username)
-        if not on:
-            st.write("No one else")
-        else:
-            for u in sorted(on.keys()):
-                if st.button(f"💬 {u}", key=f"ou_{u}", use_container_width=True):
-                    st.session_state.chat_current = u
-                    st.rerun()
+                st.warning("Check the box to confirm")
 
 
 # ═══════════════════════════════════════════════════════════════
-# THE BUTTON - PUT THIS ANYWHERE IN YOUR APP AFTER LOGIN
+# THE CHAT BUTTON - ADD THIS ANYWHERE IN YOUR APP AFTER LOGIN
 # ═══════════════════════════════════════════════════════════════
 
-# Example placement:
-st.divider()
-chat_btn_col1, chat_btn_col2, chat_btn_col3 = st.columns([1, 2, 1])
-with chat_btn_col2:
-    _chat_cleanup()
-    current_user = st.session_state.get("username") or st.session_state.get("user") or "User"
-    _chat_update_status(current_user, "online")
-    online_count = len(_chat_get_online(exclude=current_user))
+# Example placement (put this wherever you want the chat button):
+# st.divider()
+# chat_col1, chat_col2, chat_col3 = st.columns([1, 2, 1])
+# with chat_col2:
+#     _cleanup()
+#     current_user = st.session_state.get("username") or st.session_state.get("user") or "User"
+#     _update_status(current_user, "online")
+#     online_count = len(_get_online(exclude=current_user))
+#     
+#     if st.button(f"💬 Open Chat ({online_count} online)", type="primary", use_container_width=True):
+#         st.session_state.chat_current = "global"
+#         open_chat_popup()
+# 
+#     if online_count > 0:
+#         st.caption("Quick chat:")
+#         qcols = st.columns(min(online_count, 5))
+#         for i, u in enumerate(sorted(_get_online(exclude=current_user).keys())):
+#             with qcols[i % len(qcols)]:
+#                 if st.button(f"💬 {u}", key=f"qc_{u}"):
+#                     st.session_state.chat_current = u
+#                     open_chat_popup()
 
-    if st.button(
-        f"💬 Open Chat ({online_count} online)",
-        type="primary",
-        use_container_width=True,
-        key="chat_popup_btn"
-    ):
-        st.session_state.chat_current = "global"
-        open_chat_popup()
 
-if online_count > 0:
-    st.caption("Quick chat:")
-    qcols = st.columns(min(online_count, 5))
-    for i, u in enumerate(sorted(_chat_get_online(exclude=current_user).keys())):
-        with qcols[i % len(qcols)]:
-            if st.button(f"💬 {u}", key=f"qc_{u}"):
-                st.session_state.chat_current = u
-                open_chat_popup()
+
+
+
 
 
 
