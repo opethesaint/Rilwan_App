@@ -1082,7 +1082,7 @@ with st.container(height=450):
 text=st.chat_input('Type a message...')
 if text:
     if target != 'No users online':
-    send_msg(user, target, text)
+        send_msg(user, target, text)
     st.rerun()
 
 
