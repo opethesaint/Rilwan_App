@@ -1057,7 +1057,7 @@ if st.session_state.username is None:
 user=st.session_state.username; update_online(user)
 
 c1,c2=st.columns([8,1])
-with c1: st.title('💬 Welcome Ayobami')
+with c1: st.title('')
 with c2:
     if st.button('Close Chat', key='close_top'):
         st.session_state.chat_open=False
