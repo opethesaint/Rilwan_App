@@ -1004,145 +1004,86 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-st.set_page_config(page_title="Pro Chat", layout="wide")
+st.set_page_config(page_title='Pro Chat', layout='wide')
+DATA=Path('chat_data'); DATA.mkdir(exist_ok=True)
+MSG_FILE=DATA/'messages.json'; USER_FILE=DATA/'users.json'
 
-DATA = Path("chat_data")
-DATA.mkdir(exist_ok=True)
-MSG_FILE = DATA / "messages.json"
-USER_FILE = DATA / "users.json"
-
-# -----------------------------
-# Helpers
-# -----------------------------
 def load_json(fp, default):
     try:
         if fp.exists():
-            with open(fp, "r", encoding="utf-8") as f:
-                return json.load(f)
-    except:
-        pass
+            with open(fp,'r',encoding='utf-8') as f: return json.load(f)
+    except: pass
     return default
 
-def save_json(fp, data):
-    with open(fp, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+def save_json(fp,data):
+    with open(fp,'w',encoding='utf-8') as f: json.dump(data,f,indent=2)
 
 def load_messages():
-    data = load_json(MSG_FILE, [])
-    return data if isinstance(data, list) else []
+    d=load_json(MSG_FILE,[])
+    return d if isinstance(d,list) else []
 
-def save_messages(msgs):
-    save_json(MSG_FILE, msgs)
+def save_messages(m): save_json(MSG_FILE,m)
 
 def update_online(user):
-    users = load_json(USER_FILE, {})
-    users[user] = datetime.now().isoformat()
-    save_json(USER_FILE, users)
+    u=load_json(USER_FILE,{})
+    u[user]=datetime.now().isoformat(); save_json(USER_FILE,u)
 
 def get_online(me):
-    users = load_json(USER_FILE, {})
-    now = datetime.now()
-    result = []
-    for u, t in users.items():
-        if u == me:
-            continue
+    users=load_json(USER_FILE,{}) ; now=datetime.now(); out=[]
+    for u,t in users.items():
+        if u==me: continue
         try:
-            if (now - datetime.fromisoformat(t)).seconds <= 30:
-                result.append(u)
-        except:
-            pass
-    return sorted(result)
+            if (now-datetime.fromisoformat(t)).seconds<=30: out.append(u)
+        except: pass
+    return sorted(out)
 
-def send_msg(frm, to, text):
-    msgs = load_messages()
-    msgs.append({
-        "from": frm,
-        "to": to,
-        "text": text,
-        "time": datetime.now().strftime("%H:%M")
-    })
-    save_messages(msgs)
+def send_msg(frm,to,text):
+    msgs=load_messages(); msgs.append({'from':frm,'to':to,'text':text,'time':datetime.now().strftime('%H:%M')}); save_messages(msgs)
 
-def get_msgs(me, target):
-    msgs = load_messages()
-    if target == "Global":
-        return [m for m in msgs if isinstance(m, dict) and m.get("to") == "global"]
+def get_msgs(me,target):
+    msgs=load_messages()
+    if target=='Global': return [m for m in msgs if isinstance(m,dict) and m.get('to')=='global']
+    return [m for m in msgs if isinstance(m,dict) and ((m.get('from')==me and m.get('to')==target) or (m.get('from')==target and m.get('to')==me))]
 
-    return [
-        m for m in msgs
-        if isinstance(m, dict) and (
-            (m.get("from") == me and m.get("to") == target) or
-            (m.get("from") == target and m.get("to") == me)
-        )
-    ]
-
-# -----------------------------
-# Login
-# -----------------------------
-if "username" not in st.session_state:
-    st.session_state.username = None
-
+if 'username' not in st.session_state: st.session_state.username=None
+if 'chat_open' not in st.session_state: st.session_state.chat_open=True
 if st.session_state.username is None:
-    st.title("🔐 Login")
-    u = st.text_input("Username")
-    if st.button("Login"):
-        if u.strip():
-            st.session_state.username = u.strip()
-            st.rerun()
+    st.title('🔐 Login')
+    u=st.text_input('Username')
+    if st.button('Login') and u.strip():
+        st.session_state.username=u.strip(); st.rerun()
     st.stop()
 
-user = st.session_state.username
-update_online(user)
+user=st.session_state.username; update_online(user)
 
-# -----------------------------
-# Header
-# -----------------------------
-c1, c2 = st.columns([8,1])
-with c1:
-    st.title(f"💬 Welcome {user}")
+c1,c2=st.columns([8,1])
+with c1: st.title('💬 Welcome Ayobami')
 with c2:
-    if st.button("Logout", key="logout"):
-        st.session_state.username = None
+    if st.button('Close Chat', key='close_top'):
+        st.session_state.chat_open=False
         st.rerun()
 
-# -----------------------------
-# Sidebar / Chat target
-# -----------------------------
-online = get_online(user)
-target = st.selectbox("Chat with", ["Global"] + online)
+if not st.session_state.chat_open:
+    if st.button('Open Chat', key='open_chat'):
+        st.session_state.chat_open=True; st.rerun()
+    st.stop()
 
-st.caption(f"🟢 {len(online)} online")
-
-# -----------------------------
-# Messages
-# -----------------------------
+online=get_online(user)
+target=st.selectbox('Chat with',['Global']+online)
+st.caption(f'🟢 {len(online)} online')
 st.divider()
-
-msgs = get_msgs(user, target)
-
-box = st.container(height=450)
-with box:
-    if not msgs:
-        st.info("No messages yet")
-
+msgs=get_msgs(user,target)
+with st.container(height=450):
+    if not msgs: st.info('No messages yet')
     for m in msgs:
-        mine = m["from"] == user
-        name = "You" if mine else m["from"]
-        avatar = "🟢" if mine else "👤"
-
-        with st.chat_message(name, avatar=avatar):
-            st.write(m["text"])
-            st.caption(m["time"])
-
-# -----------------------------
-# Send
-# -----------------------------
-text = st.chat_input("Type a message...")
-
+        mine=m['from']==user
+        with st.chat_message('You' if mine else m['from'], avatar='🟢' if mine else '👤'):
+            st.write(m['text']); st.caption(m['time'])
+text=st.chat_input('Type a message...')
 if text:
-    receiver = "global" if target == "Global" else target
-    send_msg(user, receiver, text)
+    send_msg(user, 'global' if target=='Global' else target, text)
     st.rerun()
+
 
 
 
