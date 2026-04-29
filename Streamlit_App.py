@@ -1069,10 +1069,10 @@ if not st.session_state.chat_open:
     st.stop()
 
 online=get_online(user)
-target=st.selectbox('Chat with',['Global']+online)
+target=st.selectbox('Chat with', online if online else ['No users online'])
 st.caption(f'🟢 {len(online)} online')
 st.divider()
-msgs=get_msgs(user,target)
+msgs = [] if target == 'No users online' else get_msgs(user,target)
 with st.container(height=450):
     if not msgs: st.info('No messages yet')
     for m in msgs:
@@ -1081,9 +1081,9 @@ with st.container(height=450):
             st.write(m['text']); st.caption(m['time'])
 text=st.chat_input('Type a message...')
 if text:
-    send_msg(user, 'global' if target=='Global' else target, text)
+    if target != 'No users online':
+    send_msg(user, target, text)
     st.rerun()
-
 
 
 
